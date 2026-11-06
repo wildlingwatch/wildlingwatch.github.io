@@ -38,12 +38,15 @@ Deno.serve(async (req) => {
     if (!user) return json({ error: "Please reload the game and try again." }, 401);
 
     const { pack } = await req.json().catch(() => ({ pack: "" }));
-    const price = PRICES[String(pack)];
+    // Every season's premium pass ("premium" for Season 1, "premium-s2", ...) uses the same $5 price.
+    const season = pack === "premium" ? 1 : /^premium-s\d{1,4}$/.test(String(pack)) ? Number(String(pack).slice(9)) : 0;
+    const price = season ? PRICES.premium : PRICES[String(pack)];
     if (!price) return json({ error: "That item is not for sale right now." }, 400);
 
-    if (pack === "premium") {
-      const { data } = await supabase.from("profiles").select("premium").eq("id", user.id).maybeSingle();
-      if (data?.premium) return json({ error: "You already own the premium Trail Pass." }, 409);
+    if (season) {
+      const { data } = await supabase.from("profiles").select("premium, premium_seasons").eq("id", user.id).maybeSingle();
+      const owned = (data?.premium_seasons ?? []).includes(season) || (season === 1 && data?.premium);
+      if (owned) return json({ error: "You already own this season's premium Trail Pass." }, 409);
     }
 
     const session = await stripe.checkout.sessions.create({

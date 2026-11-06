@@ -36,7 +36,8 @@ Deno.serve(async (req) => {
     if (session.payment_status === "paid") {
       const pack = session.metadata?.pack ?? "";
       const userId = session.client_reference_id ?? session.metadata?.user_id ?? null;
-      const grant = PACKS[pack];
+      // "premium-s2", "premium-s3", ... are later seasons' premium passes.
+      const grant = PACKS[pack] ?? (/^premium-s\d{1,4}$/.test(pack) ? { gems: 0, premium: true } : undefined);
       if (!grant || !userId) {
         console.error("Paid session with unknown pack or user", session.id, pack, userId);
       } else {
