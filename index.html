@@ -556,7 +556,7 @@ body.in-lobby .main, body.in-lobby .stats, body.in-lobby header .diffrow{display
           <li><b>Saving:</b> campaign runs save after every cleared wave. Use <b>Save &amp; quit</b> between waves, then pick it up again from <b>Saved runs</b> in Trails &amp; upgrades. Endless runs are not saved.</li>
           <li>From wave 3 on, some wild ones arrive as <b>special kinds</b> (Swift, Armored, Mender, Splitter, Burrower, Warden and Phantom), each needing a different plan. The home page lists them all.</li>
           <li>Every 5th wave brings an alpha. Letting one through costs 5 Grove.</li>
-          <li>Every 5th wave has a 60% chance of a glowing <b>rare wildling</b>: Lumi (most common), Gloom or Rime. Miss two in a row and the next 5th wave is guaranteed one. They won't hurt the Grove, but they escape if they reach the end. Rares can't be bought, only caught, and releasing one returns it to your party.</li>
+          <li>Every 5th wave brings one glowing <b>rare wildling</b>, and you never know which: Lumi, Gloom or Rime, each equally likely. They won't hurt the Grove, but they escape if they reach the end. Rares can't be bought, only caught, and releasing one returns it to your party.</li>
           <li>Each stationed wildling has its own <b>targeting</b>: First, Last, Strong, Weak or Close. Set it in the panel above.</li>
           <li>Keys: <kbd>M</kbd> mute, <kbd>1</kbd>–<kbd>9</kbd> pick, <kbd>Space</kbd> start wave, <kbd>C</kbd> orb, <kbd>T</kbd> cycle targeting, <kbd>Esc</kbd> cancel.</li>
         </ul>
@@ -1382,8 +1382,7 @@ function buildWave(n){
   const hpMul=(1+.3*(n-1))*(1+.015*(n-1)*(n-1))*DIFF[S.diff].hp*(S.mode==='campaign'?LEVELS[S.level].tough:1), gap=Math.max(.32,.85-n*.02);
   for (let i=0;i<count;i++){ const sp = rnd()<.6 ? theme : ORDER[(rnd()*6)|0]; q.push({sp, hp:SP[sp].hp*hpMul, boss:false, gap, trait:traitFor(n, rnd)}); }
   if (isAlpha(n)) q.push({sp:theme, hp:SP[theme].hp*hpMul*10, boss:true, gap:1.4});
-  if (n%5===0 && (S.rareMiss>=2 || rnd()<.6)){ S.rareMiss=0; const roll=rnd(), rk = roll<.45 ? 'lumi' : roll<.75 ? 'gloom' : 'rime'; q.splice(Math.floor(q.length/2), 0, {sp:rk, hp:SP[rk].hp*hpMul*3, boss:false, rare:true, gap}); }
-  else if (n%5===0) S.rareMiss=(S.rareMiss||0)+1;
+  if (n%5===0){ const rk = RARES[(rnd()*RARES.length)|0]; q.splice(Math.floor(q.length/2), 0, {sp:rk, hp:SP[rk].hp*hpMul*3, boss:false, rare:true, gap}); }
   return q;
 }
 function startWave(){
@@ -2242,7 +2241,7 @@ function syncHUD(){
   $('modeLbl').textContent = duel ? `1v1 Duel · vs ${rivalName()}` : camp ? `Trail ${S.level+1} of ${LEVELS.length} · ${L.name}` : `Endless · ${LEVELS[endlessLevel()].name}`;
   const sb=$('startBtn'); sb.disabled = S.phase!=='build'; sb.textContent = S.phase==='wave' ? `Wave ${S.wave} in progress` : `Start wave ${S.wave+1}`;
   const n=S.wave+(S.phase==='wave'?0:1), th=SP[waveTheme(n)];
-  $('nextInfo').innerHTML = S.phase==='wave' ? `<b>${enemies.length+spawnQ.length}</b> wild ones left on the trail` : `Next: mostly <b>${th.names[0]}</b> (${th.type})${isAlpha(n)?' with an <b>alpha</b>':''}${n%5===0?' · a <b>rare wildling</b> may appear':''}${(()=>{ const nt=Object.values(TRAITS).find(v=>v.from===n); return nt ? ` · new: <b>${nt.name}</b> wild ones` : ''; })()}${camp?` · ${L.waves-S.wave} waves to go`:''}`;
+  $('nextInfo').innerHTML = S.phase==='wave' ? `<b>${enemies.length+spawnQ.length}</b> wild ones left on the trail` : `Next: mostly <b>${th.names[0]}</b> (${th.type})${isAlpha(n)?' with an <b>alpha</b>':''}${n%5===0?' · a <b>rare wildling</b> will appear':''}${(()=>{ const nt=Object.values(TRAITS).find(v=>v.from===n); return nt ? ` · new: <b>${nt.name}</b> wild ones` : ''; })()}${camp?` · ${L.waves-S.wave} waves to go`:''}`;
   $('orbBtn').disabled = S.phase==='over';
   { const sb2=$('saveBtn'), can=S.phase==='build' && (S.wave>0 || S.towers.length); sb2.hidden = S.mode!=='campaign' || S.phase==='over' || S.phase==='won'; const lbl = S.phase==='wave' ? 'Save after this wave' : 'Save & quit'; if (sb2.textContent!==lbl) sb2.textContent=lbl; sb2.disabled=!can; }
   syncParty(); renderTowerPanel(false);
