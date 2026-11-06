@@ -639,15 +639,15 @@ const SP = {
       [{name:'Dazzle', desc:'Foes it hits are slowed by 30%', mods:{slowF:-.3, slowDur:1}}, {name:'Radiance', desc:'+25% damage', mods:{dmgMul:.25}}],
       [{name:'Sunlit', desc:'Knockouts drop +4 berries', mods:{bounty:4}}, {name:'Flare', desc:'Shots split to 1 more foe', mods:{multi:1}}],
     ]},
-  gloom:{type:'shadow', rare:true, names:['Gloom','Umbra','Nocta','Nyxa'], body:'#5a4a7a', bodies:['#5a4a7a','#4c3d6b','#3f315c','#33264d'], dark:'#1a1028', belly:'#8a7aaa', acc:'#c86bff', cost:120, dmg:7, range:2.8, rate:.85, hp:38, spd:1.8,
-    ability:'Fear: foes it hits turn and flee back up the trail for a moment', base:{fear:.8},
+  gloom:{type:'shadow', rare:true, names:['Gloom','Umbra','Nocta','Nyxa'], body:'#5a4a7a', bodies:['#5a4a7a','#4c3d6b','#3f315c','#33264d'], dark:'#1a1028', belly:'#8a7aaa', acc:'#c86bff', cost:120, dmg:8.5, range:3.0, rate:.8, hp:38, spd:1.8,
+    ability:'Fear: foes it hits turn and flee back up the trail for a moment', base:{fear:1},
     evo:[
       [{name:'Terror', desc:'Fear lasts 60% longer', mods:{fear:.5}}, {name:'Shade Bolt', desc:'+30% damage', mods:{dmgMul:.3}}],
-      [{name:'Doom Mark', desc:'Foes it hits are marked. A marked foe bursts in shadow when defeated, hurting everything nearby', mods:{doom:.3}}, {name:'Twin Shade', desc:'Hits a 2nd foe at once', mods:{multi:1}}],
+      [{name:'Doom Mark', desc:'Foes it hits are marked. A marked foe bursts in shadow when defeated, hurting everything nearby', mods:{doom:.38}}, {name:'Twin Shade', desc:'Hits a 2nd foe at once', mods:{multi:1}}],
       [{name:'Haunting', desc:'Foes it defeats rise as shades that drift back up the trail, striking every foe they pass', mods:{haunt:1}}, {name:'Void', desc:'+40% damage and 20% chance to hit for 2.5x', mods:{dmgMul:.4, critC:.2, critM:2.5}}],
     ]},
-  rime:{type:'ice', rare:true, names:['Rime','Frost','Glaci','Borea'], body:'#cfefff', bodies:['#cfefff','#bce6fb','#a8dcf5','#94d0ef'], dark:'#2a5a7a', belly:'#ffffff', acc:'#7fd0ff', cost:120, dmg:6.5, range:2.7, rate:.8, hp:44, spd:1.6,
-    ability:'Frostbite: each hit adds a frost stack that slows the foe. At 5 stacks it freezes solid', base:{frost:1, freezeAt:5, freezeDur:1},
+  rime:{type:'ice', rare:true, names:['Rime','Frost','Glaci','Borea'], body:'#cfefff', bodies:['#cfefff','#bce6fb','#a8dcf5','#94d0ef'], dark:'#2a5a7a', belly:'#ffffff', acc:'#7fd0ff', cost:120, dmg:8, range:2.9, rate:.75, hp:44, spd:1.6,
+    ability:'Frostbite: each hit adds a frost stack that slows the foe. At 5 stacks it freezes solid', base:{frost:1, freezeAt:5, freezeDur:1.25},
     evo:[
       [{name:'Deep Chill', desc:'Foes freeze at 4 stacks instead of 5', mods:{freezeAt:-1}}, {name:'Icicle', desc:'+30% damage', mods:{dmgMul:.3}}],
       [{name:'Frost Field', desc:'Hits leave an icy patch on the trail that slows everything crossing it', mods:{field:1}}, {name:'Shatter', desc:'Hits on frozen foes deal triple damage', mods:{shatter:3}}],
@@ -657,9 +657,9 @@ const SP = {
 const ORDER = ['ember','tide','sprout','volt','pebble','gust','lumi','gloom','rime'];
 const RARES = ['lumi','gloom','rime'];
 const DIFF = {
-  easy:{name:'Easy', berries:220, lives:30, hp:.75, spd:.9, reward:1.25, note:'30 Grove, extra berries, softer wild ones'},
-  normal:{name:'Normal', berries:160, lives:20, hp:1, spd:1, reward:1, note:'20 Grove, the standard challenge'},
-  hard:{name:'Hard', berries:130, lives:10, hp:1.4, spd:1.12, reward:.85, note:'10 Grove, tougher and faster wild ones, fewer berries'},
+  easy:{name:'Easy', berries:240, lives:30, hp:.66, spd:.88, reward:1.3, note:'30 Grove, extra berries, softer wild ones'},
+  normal:{name:'Normal', berries:180, lives:20, hp:.88, spd:.97, reward:1.08, note:'20 Grove, the standard challenge'},
+  hard:{name:'Hard', berries:145, lives:10, hp:1.25, spd:1.08, reward:.92, note:'10 Grove, tougher and faster wild ones, fewer berries'},
 };
 const TARGETS = [
   ['first','First','Hits the wild one furthest along the trail'],
@@ -1373,13 +1373,13 @@ const TRAITS = {
 };
 function traitFor(n, rnd){
   const avail=Object.keys(TRAITS).filter(k=>TRAITS[k].from<=n);
-  return (avail.length && rnd()<Math.min(.45, .1+.02*n)) ? avail[(rnd()*avail.length)|0] : null;
+  return (avail.length && rnd()<Math.min(.35, .08+.018*n)) ? avail[(rnd()*avail.length)|0] : null;
 }
 const isAlpha = n => n%5===0 || (S.mode==='campaign' && n===LEVELS[S.level].waves);
 function buildWave(n){
   const q=[], count=Math.min(6+Math.floor(n*1.7), 60), theme=waveTheme(n);
   const rnd = S.mode==='duel' ? rng(duelSeed*977+n) : Math.random;
-  const hpMul=(1+.3*(n-1))*(1+.015*(n-1)*(n-1))*DIFF[S.diff].hp*(S.mode==='campaign'?LEVELS[S.level].tough:1), gap=Math.max(.32,.85-n*.02);
+  const hpMul=(1+.27*(n-1))*(1+.013*(n-1)*(n-1))*DIFF[S.diff].hp*(S.mode==='campaign'?LEVELS[S.level].tough:1), gap=Math.max(.32,.85-n*.02);
   for (let i=0;i<count;i++){ const sp = rnd()<.6 ? theme : ORDER[(rnd()*6)|0]; q.push({sp, hp:SP[sp].hp*hpMul, boss:false, gap, trait:traitFor(n, rnd)}); }
   if (isAlpha(n)) q.push({sp:theme, hp:SP[theme].hp*hpMul*10, boss:true, gap:1.4});
   if (n%5===0){ const rk = RARES[(rnd()*RARES.length)|0]; q.splice(Math.floor(q.length/2), 0, {sp:rk, hp:SP[rk].hp*hpMul*3, boss:false, rare:true, gap}); }
@@ -1411,13 +1411,13 @@ function spawn(q){
 function pop(x,y,text,color,size=10){ pops.push({x,y,text,color,size,t:0}); }
 function damage(t,e,amt,show,P=params(t)){
   if (e.dead || e.under) return;
-  if (e.trait==='phantom' && show && Math.random()<.33){ pop(e.x, e.y-e.r-12, 'miss', '#d9c8ff', 9); return; }
+  if (e.trait==='phantom' && show && Math.random()<.25){ pop(e.x, e.y-e.r-12, 'miss', '#d9c8ff', 9); return; }
   let m = P.super ? 2 : (CHART[SP[t.sp].type][e.type] ?? 1);
   if (e.vulnT>0) m *= 1+(e.vulnF||0);
   if (P.shatter && e.frozenT>0) amt*=P.shatter;
   let crit=false; if (P.critC && Math.random()<P.critC){ amt*=P.critM; crit=true; }
   let dmgv = amt*m;
-  if (e.trait==='armored'){ const ar=3+S.wave*.45; dmgv=Math.max(dmgv*.2, dmgv-ar); }
+  if (e.trait==='armored'){ const ar=2+S.wave*.35; dmgv=Math.max(dmgv*.2, dmgv-ar); }
   if (e.shield>0){ const ab=Math.min(e.shield, dmgv); e.shield-=ab; dmgv-=ab; }
   e.hp -= dmgv; e.hitT = .12;
   if (show && crit) pop(e.x, e.y-e.r-12, 'crit!', '#ff9a3c', 10);
@@ -1444,7 +1444,7 @@ function traitTick(e, dt){
   switch (e.trait){
     case 'mender':
       if ((e.healT-=dt)<=0){ e.healT=2.5; let any=false;
-        for (const o of enemies) if (!o.dead && o!==e && o.hp<o.max && Math.hypot(o.x-e.x,o.y-e.y)<1.4*T){ o.hp=Math.min(o.max, o.hp+o.max*.08); any=true; }
+        for (const o of enemies) if (!o.dead && o!==e && o.hp<o.max && Math.hypot(o.x-e.x,o.y-e.y)<1.4*T){ o.hp=Math.min(o.max, o.hp+o.max*.06); any=true; }
         if (any) fx.push({k:'ring', x:e.x, y:e.y, r:1.4*T, t:0, max:.45, color:'#7be06a'}); }
       break;
     case 'burrower':
@@ -1453,7 +1453,7 @@ function traitTick(e, dt){
       break;
     case 'warden':
       if ((e.wardT-=dt)<=0){ e.wardT=5;
-        for (const o of enemies) if (!o.dead && o!==e && Math.hypot(o.x-e.x,o.y-e.y)<1.5*T) o.shield=Math.max(o.shield||0, o.max*.2);
+        for (const o of enemies) if (!o.dead && o!==e && Math.hypot(o.x-e.x,o.y-e.y)<1.5*T) o.shield=Math.max(o.shield||0, o.max*.15);
         fx.push({k:'ring', x:e.x, y:e.y, r:1.5*T, t:0, max:.45, color:'#6fc3ff'}); }
       break;
     case 'swift':
@@ -1497,7 +1497,7 @@ function kill(e,t){
     for (const k of [-1,1]){ spawn({sp:e.sp, hp:Math.max(1, e.max*.35), boss:false}); const c=enemies[enemies.length-1]; c.route=e.route||0; c.dist=Math.max(0, e.dist+k*10); [c.x,c.y]=posAt(c.dist, c.route); c.r=10; c.child=true; c.spd*=1.3; c.reward=1; c.xpv=Math.max(1,e.xpv*.3); }
     fx.push({k:'ring', x:e.x, y:e.y, r:T*.6, t:0, max:.3, color:'#ffb36b'});
   }
-  if (t && t.sp==='gloom' && S.towers.includes(t) && params(t).haunt) shades.push({route:e.route||0, dist:e.dist, x:e.x, y:e.y, ttl:5, dmg:stats(t).dmg*1.5, src:t, hit:new Set(), seed:Math.random()*10});
+  if (t && t.sp==='gloom' && S.towers.includes(t) && params(t).haunt) shades.push({route:e.route||0, dist:e.dist, x:e.x, y:e.y, ttl:5, dmg:stats(t).dmg*2, src:t, hit:new Set(), seed:Math.random()*10});
   const r = e.reward + (t && t.sp ? params(t).bounty : 0);
   S.berries += r; pop(e.x, e.y-8, '+'+r, '#ffb3c0');
   fx.push({k:'puff', x:e.x, y:e.y, t:0, max:.35, color:TYPES[e.type]});
