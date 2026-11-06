@@ -217,6 +217,9 @@ body.in-home .main, body.in-home .stats, body.in-home header .diffrow{display:no
 body.in-lobby .main, body.in-lobby .stats, body.in-lobby header .diffrow{display:none}
 .duel{display:grid;gap:14px}
 .fld{display:grid;gap:6px;font-size:13px;color:var(--muted);margin:0 0 12px}
+.fld select{font:inherit;font-size:15px;background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:9px 12px;min-width:0}
+.fld select:focus-visible{outline:2px solid var(--sun);outline-offset:1px}
+#endlessPreview{display:block;width:100%;max-width:100%;height:auto;border-radius:8px;margin:0 0 12px}
 .fld input,#duelCode{font:inherit;font-size:15px;background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:9px 12px;min-width:0}
 .fld input:focus-visible,#duelCode:focus-visible{outline:2px solid var(--sun);outline-offset:1px}
 #duelCode{width:9ch;text-transform:uppercase;letter-spacing:.2em;font-family:var(--f-data)}
@@ -395,13 +398,15 @@ body.in-lobby .main, body.in-lobby .stats, body.in-lobby header .diffrow{display
     </div>
     <div class="card" id="savesCard" hidden>
       <h2>Saved runs</h2>
-      <p class="empty">Runs save automatically after every cleared wave and when you leave between waves. You keep one Endless run and one Campaign run.</p>
+      <p class="empty">Campaign runs save automatically after every cleared wave and when you leave between waves.</p>
       <div class="saves" id="saves"></div>
     </div>
     <div class="mgrid">
       <div class="card endless-card">
         <h2>Endless</h2>
-        <p class="empty">The waves never stop. See how far you can hold the Meadow Trail. Your best wave is kept for each difficulty.</p>
+        <p class="empty">The waves never stop. Pick any trail from the campaign and see how long you can hold it. Your best wave is kept for each trail and difficulty. Endless runs are not saved, so play them in one sitting.</p>
+        <label class="fld" for="endlessMap">Trail<select id="endlessMap"></select></label>
+        <canvas id="endlessPreview" width="384" height="240" aria-hidden="true"></canvas>
         <dl class="kv" id="endlessBests"></dl>
         <button class="btn primary" id="playEndless" type="button">Play Endless</button>
       </div>
@@ -505,7 +510,7 @@ body.in-lobby .main, body.in-lobby .stats, body.in-lobby header .diffrow{display
           <li><b>Throw an orb</b> at a weakened wild one to catch it. Lower health means better odds. A catch unlocks that species and gives you one free to station.</li>
           <li><b>Campaign</b>: clear 12 trails, each with its own map (the last four branch into several routes, and wild ones take turns choosing one), for up to 3 stars each. Spend stars on permanent upgrades. <b>Endless</b> tracks your best wave.</li>
           <li>Open <b>Trails &amp; upgrades</b> to visit the <b>Cosmetics</b>: skins and accessories for each wildling, map themes and orb styles, bought with gems you earn by playing.</li>
-          <li><b>Saving:</b> your run saves after every cleared wave. Use <b>Save &amp; quit</b> between waves, then pick it up again from <b>Saved runs</b> in Trails &amp; upgrades.</li>
+          <li><b>Saving:</b> campaign runs save after every cleared wave. Use <b>Save &amp; quit</b> between waves, then pick it up again from <b>Saved runs</b> in Trails &amp; upgrades. Endless runs are not saved.</li>
           <li>From wave 3 on, some wild ones arrive as <b>special kinds</b> (Swift, Armored, Mender, Splitter, Burrower, Warden and Phantom), each needing a different plan. The home page lists them all.</li>
           <li>Every 5th wave brings an alpha. Letting one through costs 5 Grove.</li>
           <li>Every 5th wave has a 60% chance of a glowing <b>rare wildling</b>: Lumi (most common), Gloom or Rime. Miss two in a row and the next 5th wave is guaranteed one. They won't hurt the Grove, but they escape if they reach the end. Rares can't be bought, only caught, and releasing one returns it to your party.</li>
@@ -640,6 +645,9 @@ const LEVELS = [
     [[-1,2],[4,2],[4,6],[9,6],[9,3],[13,3],[13,6],[16,6]],
     [[-1,8],[7,8],[7,6],[9,6],[9,3],[13,3],[13,6],[16,6]]]},
 ];
+let endlessMap='meadow'; try { endlessMap = localStorage.getItem('wildling-endless-map') || 'meadow'; } catch(e) {}
+if (!LEVELS.some(L=>L.id===endlessMap)) endlessMap='meadow';
+const endlessLevel = () => Math.max(0, LEVELS.findIndex(L=>L.id===endlessMap));
 const UPG = [
   {id:'berries', name:'Deep Pockets', desc:'+25 starting berries per rank', cost:[1,2,3]},
   {id:'grove', name:'Thick Roots', desc:'+3 Grove health per rank', cost:[1,2,3]},
@@ -652,6 +660,7 @@ const UPG = [
 ];
 let profile = {stars:{}, up:{}, gems:50, owned:{}, saves:{}, v:2, trials:{}, offers:{}, pass:{xp:0, claimed:[], claimedP:[], premium:false, track:3}, equip:{skin:{}, hat:{}, map:'meadow', orb:'seed'}};
 try { const pr = JSON.parse(localStorage.getItem('wildling-profile')); if (pr && typeof pr==='object') profile = {stars:pr.stars||{}, up:pr.up||{}, gems: typeof pr.gems==='number' ? pr.gems : 50, owned:pr.owned||{}, saves:(pr.saves && typeof pr.saves==='object') ? pr.saves : {}, v:pr.v||0, trials:pr.trials||{}, offers:pr.offers||{}, pass:{xp:0, claimed:[], ...(pr.pass||{})}, equip:{skin:{}, hat:{}, map:'meadow', orb:'seed', ...(pr.equip||{})}}; } catch(e) {}
+if (profile.saves && profile.saves.endless) delete profile.saves.endless;
 if (profile.pass.track!==3){ profile.pass.claimed=[]; profile.pass.claimedP=[]; profile.pass.track=3; }
 profile.pass.claimedP = profile.pass.claimedP || [];
 function saveProfile(){ profile.updatedAt=Date.now(); try { localStorage.setItem('wildling-profile', JSON.stringify(profile)); } catch(e) {} if (typeof cloudPush==='function') cloudPush(); }
@@ -1260,16 +1269,19 @@ let mode = 'endless', levelIdx = 0, inMenu = false;
 let best = 0, diff = 'normal';
 try { diff = localStorage.getItem('wildling-diff') || 'normal'; } catch(e) {}
 if (!DIFF[diff]) diff = 'normal';
-const bestKey = () => 'wildling-best-'+diff;
+const bestKey = (d=diff, m=endlessMap) => 'wildling-best-'+d+(m==='meadow' ? '' : '-'+m);
 function loadBest(){ best = 0; try { best = +localStorage.getItem(bestKey()) || 0; } catch(e) {} }
 function saveBest(){ if (S.mode!=='endless') return; if (S.wave>best){ best=S.wave; try { localStorage.setItem(bestKey(), best); } catch(e) {} } }
 
-function fresh(){ const dk = mode==='duel' ? 'normal' : diff, d=DIFF[dk], lives=d.lives+3*upg('grove'); return { runId: Date.now()+Math.random(), diff:dk, mode, level:levelIdx, berries:d.berries+25*upg('berries'), lives, startLives:lives, wave:0, phase:'build', towers:[], unlocked:{ember:1,tide:1,sprout:1}, box:{}, placedOnce:false }; }
+function fresh(){ const dk = mode==='duel' ? 'normal' : diff, d=DIFF[dk], lives=d.lives+3*upg('grove'); return { runId: Date.now()+Math.random(), mapId:endlessMap, diff:dk, mode, level:levelIdx, berries:d.berries+25*upg('berries'), lives, startLives:lives, wave:0, phase:'build', towers:[], unlocked:{ember:1,tide:1,sprout:1}, box:{}, placedOnce:false }; }
 function reset(data){
   const saved = data && data.S && Array.isArray(data.S.towers) ? data.S : null;
   if (saved && DIFF[saved.diff]) diff = saved.diff;
   if (saved && saved.mode){ mode = saved.mode==='duel' ? 'endless' : saved.mode; levelIdx = Math.min(LEVELS.length-1, saved.level||0); }
-  if (mode==='campaign') setPath(LEVELS[levelIdx].paths || LEVELS[levelIdx].path, 11+levelIdx*7); else setPath(ENDLESS_MAP, 7);
+  if (saved && saved.mapId && LEVELS.some(L=>L.id===saved.mapId)) endlessMap=saved.mapId;
+  if (mode==='campaign') setPath(LEVELS[levelIdx].paths || LEVELS[levelIdx].path, 11+levelIdx*7);
+  else if (mode==='endless'){ const ei=endlessLevel(), EL=LEVELS[ei]; setPath(EL.paths || EL.path, ei===0 ? 7 : 11+ei*7); }
+  else setPath(ENDLESS_MAP, 7);
   S = fresh(); loadBest();
   if (saved) { Object.assign(S, saved); S.diff = diff; S.mode = mode; S.phase = 'build'; }
   $('confirm').hidden = true;
@@ -1772,10 +1784,10 @@ let heroT=0; const heroSeg=[]; let heroTot=0;
 const heroAt=d=>{ for (const g of heroSeg) if (d<=g.s+g.L){ const k=(d-g.s)/g.L; return [g.a[0]+(g.q[0]-g.a[0])*k, g.a[1]+(g.q[1]-g.a[1])*k]; } const g=heroSeg[heroSeg.length-1]; return [g.q[0],g.q[1]]; };
 function renderHome(){
   paintScene(heroBg, HERO_WP, profile.equip.map, 3);
-  let bestAny=0; for (const k of Object.keys(DIFF)){ try { bestAny=Math.max(bestAny, +localStorage.getItem('wildling-best-'+k)||0); } catch(e) {} }
+  let bestAny=0; for (const k of Object.keys(DIFF)) for (const Lv of LEVELS){ try { bestAny=Math.max(bestAny, +localStorage.getItem(bestKey(k, Lv.id))||0); } catch(e) {} }
   const cleared=LEVELS.filter(L=>profile.stars[L.id]).length;
   $('homeStats').innerHTML = [['Stars',`${starsEarned()}/${LEVELS.length*3}`],['Trails',`${cleared}/${LEVELS.length}`],['Best wave',bestAny],['Gems',profile.gems],['Pass tier',`${passTier()}/${PASS.length}`]].map(([l,v])=>`<div class="stat"><span>${l}</span><b>${v}</b></div>`).join('');
-  $('homePlay').textContent = Object.keys(profile.saves||{}).length ? 'Resume a run' : cleared ? 'Continue' : 'Play';
+  $('homePlay').textContent = (profile.saves && profile.saves.campaign) ? 'Resume a run' : cleared ? 'Continue' : 'Play';
   const unc=unclaimed(); $('homePass').textContent = unc ? `Trail Pass · ${unc} to claim` : 'Trail Pass';
   const rcard = k => { const s=SP[k]; return `<div class="rcard"><canvas width="144" height="144" data-k="${k}" aria-hidden="true"></canvas><div class="un">${s.names[0]}</div><div class="sub">${chip(s.type)}${s.rare?'<span class="meta">rare</span>':''}</div><div class="ud">${s.ability}.${s.rare?' Appears every 5th wave and can only be caught.':''}</div><div class="meta">${s.names.slice(1).join(' → ')}</div></div>`; };
   $('roster').innerHTML = ORDER.filter(k=>!SP[k].rare).map(rcard).join('');
@@ -1808,7 +1820,7 @@ function snapRun(){
     towers:S.towers.map(({id,sp,c,r,lvl,xp,stage,path,invested,target})=>({id,sp,c,r,lvl,xp,stage,path:[...(path||[])],invested,target})) };
 }
 function saveRun(){
-  if (!S || (S.mode!=='endless' && S.mode!=='campaign') || S.phase!=='build') return false;
+  if (!S || S.mode!=='campaign' || S.phase!=='build') return false;
   if (!S.wave && !S.towers.length) return false;
   profile.saves[S.mode]=snapRun(); saveProfile(); return true;
 }
@@ -1818,6 +1830,7 @@ function clearRunSave(){
 }
 function leaveRun(dest){
   const started = S.wave>0 || S.towers.length;
+  if (S.mode==='endless' && started && S.phase!=='over'){ ask('Leave this run?', 'Endless runs are not saved, so this run ends here. Your best wave is kept.', 'Leave run', dest); return; }
   if (S.mode==='duel' && duelActive){ ask('Leave the duel?', 'Leaving counts as a loss.', 'Leave duel', dest); return; }
   if (S.phase==='build' && started){ saveRun(); dest(); return; }
   if (S.phase==='wave'){
@@ -1836,7 +1849,7 @@ function resumeRun(kind){
 }
 const ago = t => { const m=Math.max(0,Math.round((Date.now()-t)/60000)); return m<1 ? 'just now' : m<60 ? `${m} min ago` : m<1440 ? `${Math.round(m/60)} h ago` : `${Math.round(m/1440)} d ago`; };
 function renderSaves(){
-  const sv=profile.saves||{}, kinds=['endless','campaign'].filter(k=>sv[k] && Array.isArray(sv[k].towers));
+  const sv=profile.saves||{}, kinds=['campaign'].filter(k=>sv[k] && Array.isArray(sv[k].towers));
   $('savesCard').hidden = !kinds.length;
   $('saves').innerHTML = kinds.map(k => {
     const s=sv[k], L=LEVELS[s.level||0];
@@ -1852,16 +1865,20 @@ $('saves').addEventListener('click', ev => {
   delete profile.saves[d.dataset.delsave]; saveProfile(); renderSaves(); if (inHome) renderHome();
 });
 $('saveBtn').addEventListener('click', () => { if (saveRun()) openMenu(); });
+$('endlessMap').addEventListener('change', e => { endlessMap=e.target.value; try { localStorage.setItem('wildling-endless-map', endlessMap); } catch(err) {} renderMenu(); });
 function startRun(m, li=0){
   const ended=useTrials(); mode=m; levelIdx=li; closeMenu(); reset();
   if (ended.length) setTimeout(() => { const it=itemFromKey(ended[0]); toast(`Your ${it.name} trial ended. Keep it for 20% off in Cosmetics.`); }, 2600);
-  toast(m==='campaign' ? `Trail ${li+1}: ${LEVELS[li].name}. Survive ${LEVELS[li].waves} waves.` : `Endless run on ${DIFF[diff].name}`);
+  toast(m==='campaign' ? `Trail ${li+1}: ${LEVELS[li].name}. Survive ${LEVELS[li].waves} waves.` : `Endless on ${LEVELS[endlessLevel()].name} · ${DIFF[diff].name}`);
 }
 function drawMini(cn, wp, themeId){ paintScene(cn, wp, themeId||profile.equip.map, 7); }
 function renderMenu(){
   const earned=starsEarned(), bank=earned-starsSpent();
   $('starBank').textContent=bank; $('starTotal').textContent=earned;
-  $('endlessBests').innerHTML = Object.keys(DIFF).map(k => { let b=0; try { b=+localStorage.getItem('wildling-best-'+k)||0; } catch(e) {} return `<dt>${DIFF[k].name}</dt><dd>best wave ${b}</dd>`; }).join('');
+  const esel=$('endlessMap');
+  if (!esel.options.length) esel.innerHTML = LEVELS.map((Lv,i)=>`<option value="${Lv.id}">${i+1}. ${Lv.name}${Lv.paths?` (${Lv.paths.length} routes)`:''}</option>`).join('');
+  esel.value = endlessMap; { const EL=LEVELS[endlessLevel()]; drawMini($('endlessPreview'), EL.paths || EL.path); }
+  $('endlessBests').innerHTML = Object.keys(DIFF).map(k => { let b=0; try { b=+localStorage.getItem(bestKey(k))||0; } catch(e) {} return `<dt>${DIFF[k].name}</dt><dd>best wave ${b}</dd>`; }).join('');
   $('levels').innerHTML = LEVELS.map((L,i) => {
     const st=profile.stars[L.id]||0, open = i===0 || (profile.stars[LEVELS[i-1].id]||0)>0;
     return `<button type="button" class="lvl" data-i="${i}" ${open?'':'disabled'} aria-label="Trail ${i+1}, ${L.name}, ${L.waves} waves, ${st} of 3 stars${open?'':', locked'}"><canvas width="192" height="120"></canvas><span class="ln">${i+1}. ${L.name}</span><span class="lm"><span>${L.waves} waves${L.paths?` · ${L.paths.length} routes`:''}</span><span class="st">${[0,1,2].map(j=>`<span class="${j<st?'on':''}">★</span>`).join('')}</span></span>${open?'':'<span class="meta">Clear the trail before it to open</span>'}</button>`;
@@ -2161,12 +2178,12 @@ function syncHUD(){
   $('sWave').textContent = camp ? `${S.wave}/${L.waves}` : S.wave; $('sLives').textContent=S.lives; $('sBerries').textContent=Math.floor(S.berries);
   const duel=S.mode==='duel', rvd=duel?rivalDuel():null;
   $('sBestLbl').textContent = duel ? 'Rival Grove' : camp ? 'Stars' : 'Best'; $('sBest').textContent = duel ? (rvd && typeof rvd.lives==='number' ? rvd.lives : '–') : camp ? `${profile.stars[L.id]||0}/3` : best;
-  $('modeLbl').textContent = duel ? `1v1 Duel · vs ${rivalName()}` : camp ? `Trail ${S.level+1} of ${LEVELS.length} · ${L.name}` : 'Endless · Meadow Trail';
+  $('modeLbl').textContent = duel ? `1v1 Duel · vs ${rivalName()}` : camp ? `Trail ${S.level+1} of ${LEVELS.length} · ${L.name}` : `Endless · ${LEVELS[endlessLevel()].name}`;
   const sb=$('startBtn'); sb.disabled = S.phase!=='build'; sb.textContent = S.phase==='wave' ? `Wave ${S.wave} in progress` : `Start wave ${S.wave+1}`;
   const n=S.wave+(S.phase==='wave'?0:1), th=SP[waveTheme(n)];
   $('nextInfo').innerHTML = S.phase==='wave' ? `<b>${enemies.length+spawnQ.length}</b> wild ones left on the trail` : `Next: mostly <b>${th.names[0]}</b> (${th.type})${isAlpha(n)?' with an <b>alpha</b>':''}${n%5===0?' · a <b>rare wildling</b> may appear':''}${(()=>{ const nt=Object.values(TRAITS).find(v=>v.from===n); return nt ? ` · new: <b>${nt.name}</b> wild ones` : ''; })()}${camp?` · ${L.waves-S.wave} waves to go`:''}`;
   $('orbBtn').disabled = S.phase==='over';
-  { const sb2=$('saveBtn'), can=S.phase==='build' && (S.wave>0 || S.towers.length); sb2.hidden = S.mode==='duel' || S.phase==='over' || S.phase==='won'; const lbl = S.phase==='wave' ? 'Save after this wave' : 'Save & quit'; if (sb2.textContent!==lbl) sb2.textContent=lbl; sb2.disabled=!can; }
+  { const sb2=$('saveBtn'), can=S.phase==='build' && (S.wave>0 || S.towers.length); sb2.hidden = S.mode!=='campaign' || S.phase==='over' || S.phase==='won'; const lbl = S.phase==='wave' ? 'Save after this wave' : 'Save & quit'; if (sb2.textContent!==lbl) sb2.textContent=lbl; sb2.disabled=!can; }
   syncParty(); renderTowerPanel(false);
   duelTick();
 }
