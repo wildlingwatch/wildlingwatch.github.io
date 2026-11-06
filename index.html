@@ -378,7 +378,7 @@ body.in-lobby .main, body.in-lobby .stats, body.in-lobby header .diffrow{display
   <section class="menu" id="menu" hidden>
     <div class="menu-head">
       <div class="row" style="align-items:center"><button class="btn" id="toHome" type="button">Home</button><h2 class="mh">Choose a trail</h2></div>
-      <div class="starbank"><b id="starBank">0</b> stars to spend · <span id="starTotal">0</span> of 24 earned · <b class="gem" id="gemTop">0</b> gems</div>
+      <div class="starbank"><b id="starBank">0</b> stars to spend · <span id="starTotal">0</span> of <span id="starMax">36</span> earned · <b class="gem" id="gemTop">0</b> gems</div>
     </div>
     <div class="mgrid">
       <div class="card endless-card">
@@ -484,7 +484,7 @@ body.in-lobby .main, body.in-lobby .stats, body.in-lobby header .diffrow{display
         <ul class="help">
           <li>Wildlings gain XP from knockouts. At <b>Lv 5, 10 and 15</b> they stop leveling until you pay to <b>evolve</b> them. Each evolution lets you pick a <b>utility</b> or a <b>damage</b> ability, and brings a new look and much stronger stats. Tap the <b>i</b> on a party card to preview the choices.</li>
           <li><b>Throw an orb</b> at a weakened wild one to catch it. Lower health means better odds. A catch unlocks that species and gives you one free to station.</li>
-          <li><b>Campaign</b>: clear 8 trails, each with its own map, for up to 3 stars each. Spend stars on permanent upgrades. <b>Endless</b> tracks your best wave.</li>
+          <li><b>Campaign</b>: clear 12 trails, each with its own map (the last four branch into several routes, and wild ones take turns choosing one), for up to 3 stars each. Spend stars on permanent upgrades. <b>Endless</b> tracks your best wave.</li>
           <li>Open <b>Trails &amp; upgrades</b> to visit the <b>Cosmetics</b>: skins and accessories for each wildling, map themes and orb styles, bought with gems you earn by playing.</li>
           <li>Every 5th wave brings an alpha. Letting one through costs 5 Grove.</li>
           <li>Every 5th wave also brings one of three glowing <b>rare wildlings</b>: Lumi, Gloom or Rime. They won't hurt the Grove, but they escape if they reach the end. Rares can't be bought, only caught, and releasing one returns it to your party.</li>
@@ -567,18 +567,18 @@ const SP = {
       [{name:'Sunlit', desc:'Knockouts drop +4 berries', mods:{bounty:4}}, {name:'Flare', desc:'Shots split to 1 more foe', mods:{multi:1}}],
     ]},
   gloom:{type:'shadow', rare:true, names:['Gloom','Umbra','Nocta','Nyxa'], body:'#5a4a7a', bodies:['#5a4a7a','#4c3d6b','#3f315c','#33264d'], dark:'#1a1028', belly:'#8a7aaa', acc:'#c86bff', cost:120, dmg:7, range:2.8, rate:.85, hp:38, spd:1.8,
-    ability:'Hex: foes it hits take 25% more damage from every wildling', base:{vuln:.25, vulnDur:2},
+    ability:'Fear: foes it hits turn and flee back up the trail for a moment', base:{fear:.8},
     evo:[
-      [{name:'Dread', desc:'Foes it hits are slowed by 25%', mods:{slowF:-.25, slowDur:1.2}}, {name:'Shade Bolt', desc:'+30% damage', mods:{dmgMul:.3}}],
-      [{name:'Curse', desc:'Hex is 10% stronger and lasts longer', mods:{vuln:.1, vulnDur:3}}, {name:'Twin Shade', desc:'Hits a 2nd foe at once', mods:{multi:1}}],
-      [{name:'Nightfall', desc:'Knockouts drop +4 berries', mods:{bounty:4}}, {name:'Void', desc:'+40% damage and 20% chance to hit for 2.5x', mods:{dmgMul:.4, critC:.2, critM:2.5}}],
+      [{name:'Terror', desc:'Fear lasts 60% longer', mods:{fear:.5}}, {name:'Shade Bolt', desc:'+30% damage', mods:{dmgMul:.3}}],
+      [{name:'Doom Mark', desc:'Foes it hits are marked. A marked foe bursts in shadow when defeated, hurting everything nearby', mods:{doom:.3}}, {name:'Twin Shade', desc:'Hits a 2nd foe at once', mods:{multi:1}}],
+      [{name:'Haunting', desc:'Foes it defeats rise as shades that drift back up the trail, striking every foe they pass', mods:{haunt:1}}, {name:'Void', desc:'+40% damage and 20% chance to hit for 2.5x', mods:{dmgMul:.4, critC:.2, critM:2.5}}],
     ]},
   rime:{type:'ice', rare:true, names:['Rime','Frost','Glaci','Borea'], body:'#cfefff', bodies:['#cfefff','#bce6fb','#a8dcf5','#94d0ef'], dark:'#2a5a7a', belly:'#ffffff', acc:'#7fd0ff', cost:120, dmg:6.5, range:2.7, rate:.8, hp:44, spd:1.6,
-    ability:'Freeze: slows by 35% and can freeze foes solid', base:{slowF:.65, slowDur:1.5, freeze:.15},
+    ability:'Frostbite: each hit adds a frost stack that slows the foe. At 5 stacks it freezes solid', base:{frost:1, freezeAt:5, freezeDur:1},
     evo:[
-      [{name:'Chill', desc:'Freezes happen more often', mods:{freeze:.1}}, {name:'Icicle', desc:'+30% damage', mods:{dmgMul:.3}}],
-      [{name:'Blizzard', desc:'Slows everything near the target', mods:{slowAoE:1}}, {name:'Shatter', desc:'25% chance to hit for 2.5x', mods:{critC:.25, critM:2.5}}],
-      [{name:'Permafrost', desc:'Slow reaches 45% and freezes last longer', mods:{slowF:-.2, freezeDur:.4}}, {name:'Hailstorm', desc:'Hits 2 more foes at once', mods:{multi:2}}],
+      [{name:'Deep Chill', desc:'Foes freeze at 4 stacks instead of 5', mods:{freezeAt:-1}}, {name:'Icicle', desc:'+30% damage', mods:{dmgMul:.3}}],
+      [{name:'Frost Field', desc:'Hits leave an icy patch on the trail that slows everything crossing it', mods:{field:1}}, {name:'Shatter', desc:'Hits on frozen foes deal triple damage', mods:{shatter:3}}],
+      [{name:'Permafrost', desc:'Freezes last longer and spread 2 frost stacks to nearby foes', mods:{freezeDur:.6, spreadFrost:2}}, {name:'Hailstorm', desc:'Hits 2 more foes at once', mods:{multi:2}}],
     ]},
 };
 const ORDER = ['ember','tide','sprout','volt','pebble','gust','lumi','gloom','rime'];
@@ -605,6 +605,19 @@ const LEVELS = [
   {id:'quarry', name:'Old Quarry', waves:12, tough:1.2, path:[[-1,3],[2,3],[2,8],[6,8],[6,1],[9,1],[9,8],[12,8],[12,3],[16,3]]},
   {id:'cliffs', name:'Gale Cliffs', waves:14, tough:1.25, path:[[-1,8],[12,8],[12,5],[3,5],[3,2],[16,2]]},
   {id:'elder', name:'Elder Grove', waves:15, tough:1.3, path:[[8,-1],[8,2],[2,2],[2,8],[13,8],[13,2],[16,2]]},
+  // Branching trails: wild ones take turns choosing a route.
+  {id:'twin', name:'Twin Creek', waves:12, tough:1.25, note:'The trail forks around a meadow, then joins again', paths:[
+    [[-1,4],[3,4],[3,1],[12,1],[12,4],[16,4]],
+    [[-1,4],[3,4],[3,7],[12,7],[12,4],[16,4]]]},
+  {id:'cross', name:'Crossroads', waves:13, tough:1.3, note:'Two entrances merge into one road', paths:[
+    [[-1,1],[5,1],[5,5],[10,5],[10,2],[16,2]],
+    [[-1,8],[5,8],[5,5],[10,5],[10,2],[16,2]]]},
+  {id:'summit', name:'Split Summit', waves:14, tough:1.35, note:'One way in, two dens to defend', paths:[
+    [[3,-1],[3,4],[8,4],[8,1],[16,1]],
+    [[3,-1],[3,4],[8,4],[8,8],[16,8]]]},
+  {id:'bramble', name:'Bramble Maze', waves:15, tough:1.4, note:'Two entrances, a shared winding middle', paths:[
+    [[-1,2],[4,2],[4,6],[9,6],[9,3],[13,3],[13,6],[16,6]],
+    [[-1,8],[7,8],[7,6],[9,6],[9,3],[13,3],[13,6],[16,6]]]},
 ];
 const UPG = [
   {id:'berries', name:'Deep Pockets', desc:'+25 starting berries per rank', cost:[1,2,3]},
@@ -950,22 +963,29 @@ const DEC = {
 function paintScene(cn, wp, themeId, seed){
   const th=THEMES[themeId]||THEMES.meadow, b=cn.getContext('2d'), sc=cn.width/W, R=rng(seed);
   b.setTransform(sc,0,0,sc,0,0);
-  const cells=new Set();
-  for (let i=0;i<wp.length-1;i++){ const [c1,r1]=wp[i], [c2,r2]=wp[i+1], dc=Math.sign(c2-c1), dr=Math.sign(r2-r1); let c=c1, r=r1; for (;;){ cells.add(c+','+r); if (c===c2&&r===r2) break; c+=dc; r+=dr; } }
-  const pts=wp.map(([c,r])=>[(c+.5)*T,(r+.5)*T]), seg=[]; let tot=0;
-  for (let i=0;i<pts.length-1;i++){ const a=pts[i], q=pts[i+1], L=Math.hypot(q[0]-a[0],q[1]-a[1]); seg.push({a,q,L,s:tot}); tot+=L; }
-  const at=d=>{ for (const g of seg) if (d<=g.s+g.L){ const k=(d-g.s)/g.L; return [g.a[0]+(g.q[0]-g.a[0])*k, g.a[1]+(g.q[1]-g.a[1])*k]; } const g=seg[seg.length-1]; return [g.q[0],g.q[1]]; };
+  const wps=routesOf(wp), cells=new Set();
+  for (const w of wps) for (let i=0;i<w.length-1;i++){ const [c1,r1]=w[i], [c2,r2]=w[i+1], dc=Math.sign(c2-c1), dr=Math.sign(r2-r1); let c=c1, r=r1; for (;;){ cells.add(c+','+r); if (c===c2&&r===r2) break; c+=dc; r+=dr; } }
+  const routes = wps.map(w => {
+    const pts=w.map(([c,r])=>[(c+.5)*T,(r+.5)*T]), seg=[]; let tot=0;
+    for (let i=0;i<pts.length-1;i++){ const a=pts[i], q=pts[i+1], L=Math.hypot(q[0]-a[0],q[1]-a[1]); seg.push({a,q,L,s:tot}); tot+=L; }
+    const at=d=>{ for (const g of seg) if (d<=g.s+g.L){ const k=(d-g.s)/g.L; return [g.a[0]+(g.q[0]-g.a[0])*k, g.a[1]+(g.q[1]-g.a[1])*k]; } const g=seg[seg.length-1]; return [g.q[0],g.q[1]]; };
+    return {pts, tot, at};
+  });
+  const allTot=routes.reduce((a,r)=>a+r.tot,0);
+  const pick=()=>{ let x=R()*allTot; for (const r of routes){ if (x<=r.tot) return [r,x]; x-=r.tot; } const r=routes[routes.length-1]; return [r,r.tot]; };
   b.fillStyle=th.base; b.fillRect(0,0,W,H);
   b.globalAlpha=.4; for (let i=0;i<700;i++){ b.fillStyle=th.tones[i%3]; b.beginPath(); b.ellipse(R()*W,R()*H,6+R()*22,4+R()*12,R()*TAU,0,TAU); b.fill(); } b.globalAlpha=1;
   b.lineWidth=1.3; for (let i=0;i<340;i++){ const x=R()*W, y=R()*H; b.strokeStyle=th.tuft[i%2]; b.beginPath(); b.moveTo(x-3,y); b.quadraticCurveTo(x-3,y-3,x-4,y-6); b.moveTo(x,y); b.quadraticCurveTo(x,y-4,x+1,y-7); b.moveTo(x+3,y); b.quadraticCurveTo(x+3,y-3,x+4,y-5); b.stroke(); }
   b.lineCap='round'; b.lineJoin='round';
-  const poly=(dy=0)=>{ b.beginPath(); pts.forEach(([x,y],i)=>i?b.lineTo(x,y+dy):b.moveTo(x,y+dy)); b.stroke(); };
-  b.strokeStyle='rgba(0,0,0,.22)'; b.lineWidth=T*.96; poly(4);
-  b.strokeStyle=th.edge; b.lineWidth=T*.92; poly();
-  b.strokeStyle=th.fill; b.lineWidth=T*.74; poly();
-  b.globalAlpha=.75; for (let i=0;i<560;i++){ const [x,y]=at(R()*tot); b.fillStyle=th.tex[i%2]; b.beginPath(); b.arc(x+(R()-.5)*T*.62, y+(R()-.5)*T*.62, .7+R()*1.7, 0, TAU); b.fill(); } b.globalAlpha=1;
-  if (th.stones){ for (let d=20; d<tot; d+=30){ const [x,y]=at(d); b.fillStyle='rgba(0,0,0,.16)'; b.beginPath(); b.ellipse(x,y+2,10,6.5,0,0,TAU); b.fill(); b.fillStyle=th.stones; b.beginPath(); b.ellipse(x+(R()-.5)*4,y,10,6.5,R(),0,TAU); b.fill(); } }
-  b.lineWidth=1.4; for (let i=0;i<240;i++){ const d=R()*tot, [x,y]=at(d), [x2,y2]=at(Math.min(tot,d+2)), L=Math.hypot(x2-x,y2-y)||1, side=R()<.5?-1:1, px=x-(y2-y)/L*T*.45*side, py=y+(x2-x)/L*T*.45*side; b.strokeStyle=th.tuft[i%2]; b.beginPath(); b.moveTo(px-2,py+2); b.lineTo(px-3,py-4); b.moveTo(px+1,py+2); b.lineTo(px+2,py-5); b.stroke(); }
+  const polyAll=(dy=0)=>{ for (const r of routes){ b.beginPath(); r.pts.forEach(([x,y],i)=>i?b.lineTo(x,y+dy):b.moveTo(x,y+dy)); b.stroke(); } };
+  b.strokeStyle='rgba(0,0,0,.22)'; b.lineWidth=T*.96; polyAll(4);
+  b.strokeStyle=th.edge; b.lineWidth=T*.92; polyAll();
+  b.strokeStyle=th.fill; b.lineWidth=T*.74; polyAll();
+  b.globalAlpha=.75; for (let i=0;i<560*routes.length;i++){ const [r,d]=pick(), [x,y]=r.at(d); b.fillStyle=th.tex[i%2]; b.beginPath(); b.arc(x+(R()-.5)*T*.62, y+(R()-.5)*T*.62, .7+R()*1.7, 0, TAU); b.fill(); } b.globalAlpha=1;
+  if (th.stones){ for (const r of routes) for (let d=20; d<r.tot; d+=30){ const [x,y]=r.at(d); b.fillStyle='rgba(0,0,0,.16)'; b.beginPath(); b.ellipse(x,y+2,10,6.5,0,0,TAU); b.fill(); b.fillStyle=th.stones; b.beginPath(); b.ellipse(x+(R()-.5)*4,y,10,6.5,R(),0,TAU); b.fill(); } }
+  b.lineWidth=1.4; for (let i=0;i<240*routes.length;i++){ const [r,d]=pick(), [x,y]=r.at(d), [x2,y2]=r.at(Math.min(r.tot,d+2)), L=Math.hypot(x2-x,y2-y)||1, side=R()<.5?-1:1, px=x-(y2-y)/L*T*.45*side, py=y+(x2-x)/L*T*.45*side;
+    if (cells.has(Math.floor(px/T)+','+Math.floor(py/T)) && Math.hypot(px-x,py-y)>T*.4 && R()<.7) continue;
+    b.strokeStyle=th.tuft[i%2]; b.beginPath(); b.moveTo(px-2,py+2); b.lineTo(px-3,py-4); b.moveTo(px+1,py+2); b.lineTo(px+2,py-5); b.stroke(); }
   const nearPath=(c,r)=>{ for (let dc=-1;dc<=1;dc++) for (let dr=-1;dr<=1;dr++) if (cells.has((c+dc)+','+(r+dr))) return true; return false; };
   const items=[];
   for (let r=0;r<ROWS;r++) for (let c=0;c<COLS;c++){
@@ -975,10 +995,13 @@ function paintScene(cn, wp, themeId, seed){
     for (let k=0;k<n;k++) items.push([th.small[(R()*th.small.length)|0], c*T+6+R()*(T-12), r*T+6+R()*(T-12)]);
   }
   items.sort((a,q)=>a[2]-q[2]).forEach(([k,x,y])=>{ if (DEC[k]) DEC[k](b,x,y,R,th); });
-  const ey=pts[pts.length-1][1];
-  b.fillStyle=th.den[2]; for (let i=0;i<9;i++){ b.beginPath(); b.arc(W-10+R()*12, ey-34+i*8.5, 10, 0, TAU); b.fill(); }
-  b.fillStyle=th.den[0]; b.beginPath(); b.ellipse(W, ey, 24, 28, 0, 0, TAU); b.fill();
-  b.fillStyle=th.den[1]; b.beginPath(); b.ellipse(W, ey+3, 15, 19, 0, 0, TAU); b.fill();
+  const ends=[...new Set(routes.map(r=>r.pts[r.pts.length-1].join(',')))].map(s=>s.split(',').map(Number));
+  for (const [ex,ey] of ends){
+    const dx=Math.min(W,Math.max(0,ex));
+    b.fillStyle=th.den[2]; for (let i=0;i<9;i++){ b.beginPath(); b.arc(dx-10+R()*12, ey-34+i*8.5, 10, 0, TAU); b.fill(); }
+    b.fillStyle=th.den[0]; b.beginPath(); b.ellipse(dx, ey, 24, 28, 0, 0, TAU); b.fill();
+    b.fillStyle=th.den[1]; b.beginPath(); b.ellipse(dx, ey+3, 15, 19, 0, 0, TAU); b.fill();
+  }
   if (th.tint){ b.fillStyle=th.tint; b.fillRect(0,0,W,H); }
   const lg = th.moon ? b.createRadialGradient(W*.18,H*.05,10,W*.18,H*.05,W*.7) : b.createRadialGradient(W*.12,-H*.1,10,W*.12,-H*.1,W*.85);
   lg.addColorStop(0, th.moon ? 'rgba(190,210,255,.22)' : 'rgba(255,244,200,.16)'); lg.addColorStop(1,'rgba(0,0,0,0)'); b.fillStyle=lg; b.fillRect(0,0,W,H);
@@ -997,32 +1020,38 @@ function ambient(c2, tt){
 function upg(id){ return mode==='duel' ? 0 : (profile.up[id]||0); }
 const starsEarned = () => Object.values(profile.stars).reduce((a,b)=>a+b,0);
 const starsSpent = () => UPG.reduce((a,u)=>a+u.cost.slice(0,upg(u.id)).reduce((x,y)=>x+y,0),0);
+const prog = e => e.dist / ((ROUTES[e.route||0]||ROUTES[0]).total || 1);
 function better(m,e,d,b,bd){
   switch (m){
-    case 'last': return e.dist<b.dist;
-    case 'strong': return e.hp>b.hp || (e.hp===b.hp && e.dist>b.dist);
-    case 'weak': return e.hp<b.hp || (e.hp===b.hp && e.dist>b.dist);
+    case 'last': return prog(e)<prog(b);
+    case 'strong': return e.hp>b.hp || (e.hp===b.hp && prog(e)>prog(b));
+    case 'weak': return e.hp<b.hp || (e.hp===b.hp && prog(e)>prog(b));
     case 'close': return d<bd;
-    default: return e.dist>b.dist;
+    default: return prog(e)>prog(b);
   }
 }
 
 /* ---------- path ---------- */
-let pathCells, PTS, SEG, TOTAL;
+let pathCells, PTS, SEG, TOTAL, ROUTES = [], routeTurn = 0;
+const routesOf = wp => Array.isArray(wp[0][0]) ? wp : [wp];
 function setPath(wp, seed){
-  curWP = wp; pathCells = new Set();
-  for (let i = 0; i < wp.length - 1; i++) {
-    const [c1,r1] = wp[i], [c2,r2] = wp[i+1];
+  const wps = routesOf(wp);
+  curWP = wps; pathCells = new Set(); routeTurn = 0;
+  for (const w of wps) for (let i = 0; i < w.length - 1; i++) {
+    const [c1,r1] = w[i], [c2,r2] = w[i+1];
     const dc = Math.sign(c2-c1), dr = Math.sign(r2-r1);
     let c = c1, r = r1;
     for (;;) { if (c>=0 && c<COLS && r>=0 && r<ROWS) pathCells.add(c+','+r); if (c===c2 && r===r2) break; c+=dc; r+=dr; }
   }
-  PTS = wp.map(([c,r]) => [(c+.5)*T, (r+.5)*T]);
-  SEG = []; TOTAL = 0;
-  for (let i = 0; i < PTS.length-1; i++) { const a=PTS[i], b=PTS[i+1], L=Math.hypot(b[0]-a[0], b[1]-a[1]); SEG.push({a,b,L,s:TOTAL}); TOTAL += L; }
+  ROUTES = wps.map(w => {
+    const pts = w.map(([c,r]) => [(c+.5)*T, (r+.5)*T]), seg = []; let total = 0;
+    for (let i = 0; i < pts.length-1; i++) { const a=pts[i], b=pts[i+1], L=Math.hypot(b[0]-a[0], b[1]-a[1]); seg.push({a,b,L,s:total}); total += L; }
+    return { pts, seg, total };
+  });
+  PTS = ROUTES[0].pts; SEG = ROUTES[0].seg; TOTAL = ROUTES[0].total;
   paintBg(seed);
 }
-function posAt(d){ for (const g of SEG) if (d <= g.s+g.L) { const k=(d-g.s)/g.L; return [g.a[0]+(g.b[0]-g.a[0])*k, g.a[1]+(g.b[1]-g.a[1])*k]; } const g=SEG[SEG.length-1]; return [g.b[0], g.b[1]]; }
+function posAt(d, ri=0){ const SEG=(ROUTES[ri]||ROUTES[0]).seg; for (const g of SEG) if (d <= g.s+g.L) { const k=(d-g.s)/g.L; return [g.a[0]+(g.b[0]-g.a[0])*k, g.a[1]+(g.b[1]-g.a[1])*k]; } const g=SEG[SEG.length-1]; return [g.b[0], g.b[1]]; }
 
 /* ---------- canvas ---------- */
 const cv = document.getElementById('game'), ctx = cv.getContext('2d');
@@ -1203,6 +1232,7 @@ function drawCritter(c,k,x,y,r,stage,time,o={}){
 
 /* ---------- state ---------- */
 const $ = id => document.getElementById(id);
+let zones=[], shades=[];
 let S, enemies, projs, fx, pops, spawnQ, spawnT, uid, time, speed = 1, paused = false, autoT = -1;
 let placing = null, selected = null, throwMode = false, hover = null;
 let mode = 'endless', levelIdx = 0, inMenu = false;
@@ -1218,11 +1248,11 @@ function reset(data){
   const saved = data && data.S && Array.isArray(data.S.towers) ? data.S : null;
   if (saved && DIFF[saved.diff]) diff = saved.diff;
   if (saved && saved.mode){ mode = saved.mode==='duel' ? 'endless' : saved.mode; levelIdx = Math.min(LEVELS.length-1, saved.level||0); }
-  if (mode==='campaign') setPath(LEVELS[levelIdx].path, 11+levelIdx*7); else setPath(ENDLESS_MAP, 7);
+  if (mode==='campaign') setPath(LEVELS[levelIdx].paths || LEVELS[levelIdx].path, 11+levelIdx*7); else setPath(ENDLESS_MAP, 7);
   S = fresh(); loadBest();
   if (saved) { Object.assign(S, saved); S.diff = diff; S.mode = mode; S.phase = 'build'; }
   $('confirm').hidden = true;
-  enemies=[]; projs=[]; fx=[]; pops=[]; spawnQ=[]; spawnT=0; uid=1000; time=0; autoT=-1;
+  enemies=[]; projs=[]; fx=[]; pops=[]; zones=[]; shades=[]; spawnQ=[]; spawnT=0; uid=1000; time=0; autoT=-1;
   S.towers.forEach(t => { t.cd=0; t.face=1; t.target=t.target||'first'; t.path=t.path||Array(t.stage||0).fill(0); t.x=(t.c+.5)*T; t.y=(t.r+.5)*T; uid=Math.max(uid,t.id+1); });
   placing=null; selected=null; throwMode=false;
   $('over').hidden = true; $('win').hidden = true; $('hint').hidden = S.placedOnce;
@@ -1236,7 +1266,7 @@ const canEvolve = t => t.stage<3 && t.lvl>=EVO_LV[t.stage];
 const atCap = t => t.lvl>=MAXLV || canEvolve(t);
 function params(t){
   const s=SP[t.sp];
-  const P={dmgMul:0, range:0, splashR:0, splashF:0, burn:0, burnDur:2.5, poison:0, poisonDur:3, spread:0, slowF:1, slowDur:0, slowAoE:0, stun:0, stunAoE:0, stunAll:0, shockR:0, shockF:0, chain:0, chainFall:.7, multi:0, knock:0, vuln:0, vulnDur:0, critC:0, critM:1, bounty:0, super:0, freeze:0, freezeDur:.7, ...s.base};
+  const P={dmgMul:0, range:0, splashR:0, splashF:0, burn:0, burnDur:2.5, poison:0, poisonDur:3, spread:0, slowF:1, slowDur:0, slowAoE:0, stun:0, stunAoE:0, stunAll:0, shockR:0, shockF:0, chain:0, chainFall:.7, multi:0, knock:0, vuln:0, vulnDur:0, critC:0, critM:1, bounty:0, super:0, freeze:0, freezeDur:.7, fear:0, doom:0, haunt:0, frost:0, freezeAt:5, field:0, shatter:0, spreadFrost:0, ...s.base};
   (t.path||[]).forEach((c,i) => { const m=s.evo[i][c].mods; for (const k in m) P[k] = (k==='critM'||k==='vulnDur') ? Math.max(P[k],m[k]) : P[k]+m[k]; });
   P.slowF = Math.max(.3, P.slowF);
   return P;
@@ -1275,7 +1305,7 @@ function spawn(q){
   const e={ id:++uid, sp:q.sp, type:s.type, hp:q.hp, max:q.hp, spd:s.spd*(q.boss?.7:1)*D.spd, dist:0, boss:q.boss, rare:!!q.rare, r:q.boss?22:q.rare?15:13,
     reward:Math.max(1, Math.round((q.boss?40+5*S.wave:q.rare?30+2*S.wave:3+Math.floor(S.wave/4))*D.reward)), xpv:(4+S.wave*.5)*(q.boss?6:1),
     slowT:0, slowF:1, poisonT:0, poisonDps:0, poisonSrc:null, stunT:0, hitT:0, seed:Math.random()*10, face:1 };
-  [e.x,e.y]=posAt(0); enemies.push(e);
+  e.route = routeTurn++ % ROUTES.length; e.frost=0; [e.x,e.y]=posAt(0, e.route); enemies.push(e);
   if (e.rare) toast(`A rare ${SP[e.sp].names[0]} appeared! Throw an orb to catch it.`);
 }
 
@@ -1285,14 +1315,36 @@ function damage(t,e,amt,show,P=params(t)){
   if (e.dead) return;
   let m = P.super ? 2 : (CHART[SP[t.sp].type][e.type] ?? 1);
   if (e.vulnT>0) m *= 1+(e.vulnF||0);
+  if (P.shatter && e.frozenT>0) amt*=P.shatter;
   let crit=false; if (P.critC && Math.random()<P.critC){ amt*=P.critM; crit=true; }
   e.hp -= amt*m; e.hitT = .12;
   if (show && crit) pop(e.x, e.y-e.r-12, 'crit!', '#ff9a3c', 10);
   else if (show && m>1.5 && Math.random()<.5) pop(e.x, e.y-e.r-12, 'super!', '#ffe27a', 9);
   if (e.hp<=0) kill(e,t);
 }
+function addFrost(o, n, P, t, spread){
+  if (o.dead || o.frozenT>0) return;
+  o.frost=(o.frost||0)+n; o.frostT=2.5;
+  const need=Math.max(2, P.freezeAt||5);
+  if (o.frost>=need){
+    const fd=o.boss?P.freezeDur*.4:P.freezeDur; o.frost=0; o.stunT=Math.max(o.stunT,fd); o.frozenT=Math.max(o.frozenT||0,fd);
+    fx.push({k:'ring', x:o.x, y:o.y, r:T*.55, t:0, max:.35, color:'#cfefff'}); sfx('shoot','ice');
+    if (spread && P.spreadFrost) for (const q of enemies) if (q!==o && !q.dead && Math.hypot(q.x-o.x,q.y-o.y)<1.3*T) addFrost(q, P.spreadFrost, P, t, false);
+  }
+}
+function addZone(o){
+  const z=zones.find(z=>Math.hypot(z.x-o.x,z.y-o.y)<T*.5);
+  if (z){ z.t=0; return; }
+  zones.push({x:o.x, y:o.y, r:T*.62, t:0, max:3});
+  if (zones.length>10) zones.shift();
+}
 function kill(e,t){
   if (e.dead) return; e.dead = true; sfx('ko');
+  if (e.doomT>0){
+    const R=1.25*T, dmg=e.max*e.doomP; fx.push({k:'ring', x:e.x, y:e.y, r:R, t:0, max:.4, color:'#c86bff'}); fx.push({k:'puff', x:e.x, y:e.y, t:0, max:.45, color:'#7a3ab8'});
+    for (const o of enemies) if (o!==e && !o.dead && Math.hypot(o.x-e.x,o.y-e.y)<R) damage(e.doomSrc, o, dmg, false);
+  }
+  if (t && t.sp==='gloom' && S.towers.includes(t) && params(t).haunt) shades.push({route:e.route||0, dist:e.dist, x:e.x, y:e.y, ttl:5, dmg:stats(t).dmg*1.5, src:t, hit:new Set(), seed:Math.random()*10});
   const r = e.reward + (t && t.sp ? params(t).bounty : 0);
   S.berries += r; pop(e.x, e.y-8, '+'+r, '#ffb3c0');
   fx.push({k:'puff', x:e.x, y:e.y, t:0, max:.35, color:TYPES[e.type]});
@@ -1317,6 +1369,10 @@ function afflict(t,o,P,dmg,primary){
   if (P.vuln){ o.vulnT=Math.max(o.vulnT||0,P.vulnDur||1.5); o.vulnF=Math.max(o.vulnF||0,P.vuln); }
   if (primary && P.stun) o.stunT=Math.max(o.stunT, o.boss?P.stun*.4:P.stun);
   if (primary && P.knock && !o.boss) o.dist=Math.max(0, o.dist-P.knock*T);
+  if (primary && P.fear && !(o.fearCD>0)){ const f=o.boss?P.fear*.4:P.fear; o.fearT=f; o.fearCD=f+1.2; }
+  if (P.doom){ o.doomT=4; o.doomP=P.doom; o.doomSrc=t; }
+  if (P.frost) addFrost(o, P.frost, P, t, true);
+  if (primary && P.field) addZone(o);
   if (primary && P.freeze && Math.random()<P.freeze){ const fd=o.boss?P.freezeDur*.4:P.freezeDur; o.stunT=Math.max(o.stunT,fd); o.frozenT=Math.max(o.frozenT||0,fd); }
 }
 const stunFor = (o,s) => { if (!o.dead) o.stunT=Math.max(o.stunT, o.boss?s*.4:s); };
@@ -1372,11 +1428,22 @@ function update(dt){
     if (e.slowT>0){ e.slowT-=dt; if (e.slowT<=0) e.slowF=1; }
     if (e.vulnT>0){ e.vulnT-=dt; if (e.vulnT<=0) e.vulnF=0; }
     if (e.frozenT>0) e.frozenT-=dt;
+    if (e.frostT>0){ e.frostT-=dt; if (e.frostT<=0) e.frost=0; }
+    if (e.doomT>0) e.doomT-=dt;
+    if (e.fearCD>0) e.fearCD-=dt;
     if (e.stunT>0){ e.stunT-=dt; continue; }
-    e.dist += e.spd*(e.slowT>0?e.slowF:1)*T*dt;
-    const px=e.x; [e.x,e.y]=posAt(e.dist); if (Math.abs(e.x-px)>.01) e.face = e.x<px?-1:1;
-    if (e.dist>=TOTAL){ e.dead=true; if (e.rare){ toast(`The rare ${SP[e.sp].names[0]} slipped away`); continue; } S.lives-=e.boss?5:1; sfx('leak'); pop(W-30, e.y-20, e.boss?'-5 Grove':'-1 Grove', '#ff6680', 11); fx.push({k:'flash', t:0, max:.3}); }
+    const step = e.spd*(e.slowT>0?e.slowF:1)*(1-Math.min(.3,(e.frost||0)*.06))*T*dt;
+    if (e.fearT>0){ e.fearT-=dt; e.dist=Math.max(0, e.dist-step*.75); } else e.dist += step;
+    const px=e.x; [e.x,e.y]=posAt(e.dist, e.route); if (Math.abs(e.x-px)>.01) e.face = e.x<px?-1:1;
+    if (e.dist>=ROUTES[e.route].total){ e.dead=true; if (e.rare){ toast(`The rare ${SP[e.sp].names[0]} slipped away`); continue; } S.lives-=e.boss?5:1; sfx('leak'); pop(W-30, e.y-20, e.boss?'-5 Grove':'-1 Grove', '#ff6680', 11); fx.push({k:'flash', t:0, max:.3}); }
   }
+  for (const z of zones){ z.t+=dt; for (const e of enemies) if (!e.dead && Math.hypot(e.x-z.x,e.y-z.y)<z.r){ e.slowT=Math.max(e.slowT,.35); e.slowF=Math.min(e.slowF,.6); } }
+  zones=zones.filter(z=>z.t<z.max);
+  for (const sh of shades){
+    sh.ttl-=dt; sh.dist-=2.4*T*dt; [sh.x,sh.y]=posAt(Math.max(0,sh.dist), sh.route);
+    for (const e of enemies) if (!e.dead && !sh.hit.has(e.id) && Math.hypot(e.x-sh.x,e.y-sh.y)<T*.55){ sh.hit.add(e.id); damage(sh.src, e, sh.dmg, false); fx.push({k:'puff', x:e.x, y:e.y, t:0, max:.3, color:'#c86bff'}); }
+  }
+  shades=shades.filter(sh=>sh.ttl>0 && sh.dist>0);
   for (const t of S.towers){
     t.cd-=dt; if (t.cd>0) continue;
     const st=stats(t), mode=t.target||'first'; let tgt=null, td=0;
@@ -1411,7 +1478,7 @@ function winLevel(){
   const L=LEVELS[S.level], ratio=S.lives/S.startLives, stars = ratio>=.85 ? 3 : ratio>=.5 ? 2 : 1;
   const prev=profile.stars[L.id]||0; if (stars>prev){ profile.stars[L.id]=stars; saveProfile(); }
   const gained=Math.max(0,stars-prev); addGems(5+10*gained); addPassXP(40+20*gained);
-  $('winTitle').textContent = S.level===LEVELS.length-1 ? 'The Elder Grove is safe!' : `${L.name} cleared`;
+  $('winTitle').textContent = S.level===LEVELS.length-1 ? 'Campaign complete! Every trail is safe.' : `${L.name} cleared`;
   $('winStars').innerHTML = [0,1,2].map(i=>`<span class="${i<stars?'on':''}">★</span>`).join('');
   $('winStars').setAttribute('aria-label', `${stars} of 3 stars`);
   $('winText').textContent = `You kept ${S.lives} of ${S.startLives} Grove. ` + (gained ? `+${gained} new star${gained>1?'s':''} to spend on upgrades.` : 'No new stars this time.') + ` +${5+10*gained} gems.`;
@@ -1434,6 +1501,7 @@ function gameOver(){
 function render(){
   ctx.drawImage(bg,0,0,W,H);
   if (selected && S.towers.includes(selected)){ const st=stats(selected); ctx.fillStyle='rgba(255,201,74,.12)'; ctx.strokeStyle='rgba(255,201,74,.7)'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(selected.x,selected.y,st.range,0,TAU); ctx.fill(); ctx.stroke(); }
+  for (const z of zones){ const a=1-z.t/z.max; ctx.fillStyle=`rgba(200,240,255,${.45*a})`; ctx.strokeStyle=`rgba(255,255,255,${.7*a})`; ctx.lineWidth=1.5; ctx.beginPath(); for (let i=0;i<10;i++){ const an=i/10*TAU, rr=z.r*(i%2?.82:1); ctx.lineTo(z.x+Math.cos(an)*rr, z.y+Math.sin(an)*rr*.7); } ctx.closePath(); ctx.fill(); ctx.stroke(); }
   for (const t of S.towers){
     ctx.fillStyle='rgba(20,40,22,.35)'; ell(ctx,t.x,t.y+13,19,7); ctx.fill();
     ctx.strokeStyle=t===selected?'#ffc94a':'rgba(255,255,255,.25)'; ctx.lineWidth=2; ell(ctx,t.x,t.y+13,19,7); ctx.stroke();
@@ -1455,12 +1523,17 @@ function render(){
     if (e.frozenT>0){ ctx.fillStyle='rgba(170,225,255,.55)'; ctx.beginPath(); ctx.arc(e.x,e.y,e.r*1.05,0,TAU); ctx.fill(); ctx.strokeStyle='rgba(255,255,255,.9)'; ctx.lineWidth=1.5; ctx.stroke(); }
     if (e.hitT>0){ ctx.fillStyle='rgba(255,255,255,.35)'; ctx.beginPath(); ctx.arc(e.x,e.y,e.r,0,TAU); ctx.fill(); }
     if (e.poisonT>0){ ctx.fillStyle='rgba(176,92,214,.85)'; for (let i=0;i<3;i++){ const a=time*3+i*2.1; ctx.beginPath(); ctx.arc(e.x+Math.cos(a)*e.r*.7, e.y-e.r*.2-((time*20+i*7)%12), 2, 0, TAU); ctx.fill(); } }
+    if (e.frost>0){ ctx.fillStyle='#bfefff'; for (let i=0;i<e.frost;i++){ const fx2=e.x-e.r+i*5+2, fy=e.y-e.r-(e.boss?20:16); ctx.beginPath(); ctx.moveTo(fx2,fy-3); ctx.lineTo(fx2+2,fy); ctx.lineTo(fx2,fy+3); ctx.lineTo(fx2-2,fy); ctx.closePath(); ctx.fill(); } }
+    if (e.doomT>0){ ctx.save(); ctx.strokeStyle='rgba(200,107,255,.9)'; ctx.lineWidth=2; ctx.setLineDash([5,4]); ctx.lineDashOffset=-time*20; ctx.beginPath(); ctx.arc(e.x,e.y,e.r+6,0,TAU); ctx.stroke(); ctx.restore(); }
+    if (e.fearT>0){ ctx.fillStyle='#e0b8ff'; ctx.font='bold 13px Rubik, sans-serif'; ctx.textAlign='center'; ctx.fillText('!', e.x+e.r*.9, e.y-e.r-4); }
     if (e.burnT>0){ ctx.fillStyle='rgba(255,140,40,.9)'; for (let i=0;i<3;i++){ const a=time*4+i*2.1; ctx.beginPath(); ctx.arc(e.x+Math.cos(a)*e.r*.6, e.y+e.r*.3-((time*28+i*9)%16), 2.2, 0, TAU); ctx.fill(); } }
     if (e.stunT>0){ ctx.fillStyle='#ffe27a'; for (let i=0;i<3;i++){ const a=time*6+i*TAU/3; ctx.beginPath(); ctx.arc(e.x+Math.cos(a)*e.r*.8, e.y-e.r-6+Math.sin(a)*3, 2.2, 0, TAU); ctx.fill(); } }
     const bw=e.r*2, by=e.y-e.r-(e.boss?14:10);
     ctx.fillStyle='rgba(10,20,14,.8)'; ctx.fillRect(e.x-bw/2-1, by-1, bw+2, 5);
     const f=Math.max(0,e.hp/e.max); ctx.fillStyle=f>.5?'#7be06a':f>.25?'#ffc94a':'#ff6680'; ctx.fillRect(e.x-bw/2, by, bw*f, 3);
   }
+  for (const sh of shades){ const a=Math.min(1, sh.ttl/1.2)*.8, bob=Math.sin(time*6+sh.seed)*3; ctx.save(); ctx.globalAlpha=a; const g=ctx.createRadialGradient(sh.x,sh.y+bob,2,sh.x,sh.y+bob,18); g.addColorStop(0,'rgba(200,107,255,.6)'); g.addColorStop(1,'rgba(200,107,255,0)'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(sh.x,sh.y+bob,18,0,TAU); ctx.fill();
+    ctx.fillStyle='#e8d8ff'; ctx.beginPath(); ctx.arc(sh.x,sh.y-3+bob,8,Math.PI,0); for (let i=0;i<=4;i++) ctx.lineTo(sh.x+8-i*4, sh.y+7+bob+(i%2?-3:0)); ctx.closePath(); ctx.fill(); ctx.fillStyle='#3a2560'; ctx.beginPath(); ctx.arc(sh.x-3,sh.y-3+bob,1.6,0,TAU); ctx.arc(sh.x+3,sh.y-3+bob,1.6,0,TAU); ctx.fill(); ctx.restore(); }
   for (const p of projs){
     const col=TYPES[SP[p.sp].type]; ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
     if (p.sp==='sprout'){ ctx.fillStyle='#7fdc5e'; ell(ctx,0,0,6,2.6); ctx.fill(); }
@@ -1599,7 +1672,7 @@ function renderHome(){
   paintScene(heroBg, HERO_WP, profile.equip.map, 3);
   let bestAny=0; for (const k of Object.keys(DIFF)){ try { bestAny=Math.max(bestAny, +localStorage.getItem('wildling-best-'+k)||0); } catch(e) {} }
   const cleared=LEVELS.filter(L=>profile.stars[L.id]).length;
-  $('homeStats').innerHTML = [['Stars',`${starsEarned()}/24`],['Trails',`${cleared}/${LEVELS.length}`],['Best wave',bestAny],['Gems',profile.gems],['Pass tier',`${passTier()}/${PASS.length}`]].map(([l,v])=>`<div class="stat"><span>${l}</span><b>${v}</b></div>`).join('');
+  $('homeStats').innerHTML = [['Stars',`${starsEarned()}/${LEVELS.length*3}`],['Trails',`${cleared}/${LEVELS.length}`],['Best wave',bestAny],['Gems',profile.gems],['Pass tier',`${passTier()}/${PASS.length}`]].map(([l,v])=>`<div class="stat"><span>${l}</span><b>${v}</b></div>`).join('');
   $('homePlay').textContent = cleared ? 'Continue' : 'Play';
   const unc=unclaimed(); $('homePass').textContent = unc ? `Trail Pass · ${unc} to claim` : 'Trail Pass';
   const rcard = k => { const s=SP[k]; return `<div class="rcard"><canvas width="144" height="144" data-k="${k}" aria-hidden="true"></canvas><div class="un">${s.names[0]}</div><div class="sub">${chip(s.type)}${s.rare?'<span class="meta">rare</span>':''}</div><div class="ud">${s.ability}.${s.rare?' Appears every 5th wave and can only be caught.':''}</div><div class="meta">${s.names.slice(1).join(' → ')}</div></div>`; };
@@ -1639,9 +1712,9 @@ function renderMenu(){
   $('endlessBests').innerHTML = Object.keys(DIFF).map(k => { let b=0; try { b=+localStorage.getItem('wildling-best-'+k)||0; } catch(e) {} return `<dt>${DIFF[k].name}</dt><dd>best wave ${b}</dd>`; }).join('');
   $('levels').innerHTML = LEVELS.map((L,i) => {
     const st=profile.stars[L.id]||0, open = i===0 || (profile.stars[LEVELS[i-1].id]||0)>0;
-    return `<button type="button" class="lvl" data-i="${i}" ${open?'':'disabled'} aria-label="Trail ${i+1}, ${L.name}, ${L.waves} waves, ${st} of 3 stars${open?'':', locked'}"><canvas width="192" height="120"></canvas><span class="ln">${i+1}. ${L.name}</span><span class="lm"><span>${L.waves} waves</span><span class="st">${[0,1,2].map(j=>`<span class="${j<st?'on':''}">★</span>`).join('')}</span></span>${open?'':'<span class="meta">Clear the trail before it to open</span>'}</button>`;
+    return `<button type="button" class="lvl" data-i="${i}" ${open?'':'disabled'} aria-label="Trail ${i+1}, ${L.name}, ${L.waves} waves, ${st} of 3 stars${open?'':', locked'}"><canvas width="192" height="120"></canvas><span class="ln">${i+1}. ${L.name}</span><span class="lm"><span>${L.waves} waves${L.paths?` · ${L.paths.length} routes`:''}</span><span class="st">${[0,1,2].map(j=>`<span class="${j<st?'on':''}">★</span>`).join('')}</span></span>${open?'':'<span class="meta">Clear the trail before it to open</span>'}</button>`;
   }).join('');
-  document.querySelectorAll('#levels canvas').forEach((cn,i) => drawMini(cn, LEVELS[i].path));
+  document.querySelectorAll('#levels canvas').forEach((cn,i) => drawMini(cn, LEVELS[i].paths || LEVELS[i].path));
   $('ups').innerHTML = UPG.map(u => {
     const r=upg(u.id), max=u.cost.length, next=u.cost[r], can=r<max && bank>=next;
     return `<div class="up"><div class="un">${u.name}</div><div class="ud">${u.desc}</div><div class="pips" aria-label="rank ${r} of ${max}">${u.cost.map((_,j)=>`<i class="${j<r?'on':''}"></i>`).join('')}</div><button type="button" class="btn ${can?'primary':''}" data-u="${u.id}" ${can?'':'disabled'}>${r>=max?'Maxed':`Buy rank ${r+1} · ${next} star${next>1?'s':''}`}</button></div>`;
