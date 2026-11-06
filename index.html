@@ -193,6 +193,7 @@ kbd{font-family:var(--f-data);font-size:10px;background:var(--panel2);border:1px
 .monwrap.rare .mon.sel{border-color:var(--sun)}
 .tip .stages{display:grid;gap:5px;margin:8px 0}
 .menu{display:grid;gap:14px}
+.menu-head .starbank .btn{margin-left:8px;vertical-align:middle}
 .menu-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px}
 .mh{font-family:var(--f-display);font-weight:400;font-size:22px;margin:0;color:var(--ink)}
 .starbank{font-family:var(--f-data);font-size:13px;color:var(--muted)}
@@ -478,7 +479,7 @@ body.in-lobby .main, body.in-lobby .stats, body.in-lobby header .diffrow{display
   <section class="menu" id="menu" hidden>
     <div class="menu-head">
       <div class="row" style="align-items:center"><button class="btn" id="toHome" type="button"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 11.5 12 4.5l8.5 7"/><path d="M6 10v9.5h4.5V14h3v5.5H18V10"/></svg>Home</button><h2 class="mh">Choose a trail</h2></div>
-      <div class="starbank"><b id="starBank">0</b> stars to spend · <span id="starTotal">0</span> of <span id="starMax">36</span> earned · <b class="gem" id="gemTop">0</b> gems</div>
+      <div class="starbank"><b id="starBank">0</b> stars to spend · <span id="starTotal">0</span> of <span id="starMax">36</span> earned · <b class="gem" id="gemTop">0</b> gems <button class="btn" id="menuShop" type="button">Cosmetics &amp; Trail Pass</button></div>
     </div>
     <div class="card" id="savesCard" hidden>
       <h2>Saved runs</h2>
@@ -504,6 +505,13 @@ body.in-lobby .main, body.in-lobby .stats, body.in-lobby header .diffrow{display
       <div class="up-head"><h2>Upgrades</h2><button class="btn" id="respec" type="button">Refund all stars</button></div>
       <p class="empty">Spend stars on upgrades that apply to every run, in the Campaign and in Endless. Refunds are free, so you can try other builds.</p>
       <div class="ups" id="ups"></div>
+    </div>
+  </section>
+
+  <section class="menu" id="shopPage" hidden>
+    <div class="menu-head">
+      <div class="row" style="align-items:center"><button class="btn" id="shopHome" type="button"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 11.5 12 4.5l8.5 7"/><path d="M6 10v9.5h4.5V14h3v5.5H18V10"/></svg>Home</button><h2 class="mh">Cosmetics &amp; Trail Pass</h2></div>
+      <button class="btn" id="shopTrails" type="button">Trails &amp; upgrades</button>
     </div>
     <div class="card" id="pass">
       <div class="up-head"><h2>Trail Pass · Season 1</h2><div class="starbank">Tier <b id="passTier">0</b> of 15</div></div>
@@ -596,7 +604,7 @@ body.in-lobby .main, body.in-lobby .stats, body.in-lobby header .diffrow{display
           <li>Wildlings gain XP from knockouts. At <b>Lv 5, 10 and 15</b> they stop leveling until you pay to <b>evolve</b> them. Each evolution lets you pick a <b>utility</b> or a <b>damage</b> ability, and brings a new look and much stronger stats. Tap the <b>i</b> on a party card to preview the choices.</li>
           <li><b>Throw an orb</b> at a weakened wild one to catch it. Lower health means better odds. A catch unlocks that species and gives you one free to station.</li>
           <li><b>Campaign</b>: clear 12 trails, each with its own map (the last four branch into several routes, and wild ones take turns choosing one), for up to 3 stars each. Spend stars on permanent upgrades. <b>Endless</b> tracks your best wave.</li>
-          <li>Open <b>Trails &amp; upgrades</b> to visit the <b>Cosmetics</b>: skins and accessories for each wildling, map themes and orb styles, bought with gems you earn by playing.</li>
+          <li>Open <b>Cosmetics &amp; Trail Pass</b> from the home page or Trails &amp; upgrades for skins and accessories for each wildling, map themes and orb styles, bought with gems you earn by playing.</li>
           <li><b>Saving:</b> campaign runs save after every cleared wave. Use <b>Save &amp; quit</b> between waves, then pick it up again from <b>Saved runs</b> in Trails &amp; upgrades. Endless runs are not saved.</li>
           <li>From wave 3 on, some wild ones arrive as <b>special kinds</b> (Swift, Armored, Mender, Splitter, Burrower, Warden and Phantom), each needing a different plan. The home page lists them all.</li>
           <li>Every 5th wave brings an alpha. Letting one through costs 5 Grove.</li>
@@ -1982,7 +1990,7 @@ function renderHome(){
   $('homeStats').innerHTML = [['Stars',`${starsEarned()}/${LEVELS.length*3}`],['Trails',`${cleared}/${LEVELS.length}`],['Best wave',bestAny],['Gems',profile.gems],['Pass tier',`${passTier()}/${PASS.length}`]].map(([l,v])=>`<div class="stat"><span>${l}</span><b>${v}</b></div>`).join('');
   $('homePlay').textContent = (profile.saves && profile.saves.campaign) ? 'Resume a run' : cleared ? 'Continue' : 'Play';
   const unc=unclaimed(); $('homePass').textContent = unc ? `Trail Pass · ${unc} to claim` : 'Trail Pass';
-  const rcard = k => { const s=SP[k]; return `<div class="rcard"><canvas width="144" height="144" data-k="${k}" aria-hidden="true"></canvas><div class="un">${s.names[0]}</div><div class="sub">${chip(s.type)}${s.rare?'<span class="meta">rare</span>':''}</div><div class="ud">${s.ability}.${s.rare?' Appears every 5th wave and can only be caught.':''}</div><div class="meta">${s.names.slice(1).join(' → ')}</div></div>`; };
+  const rcard = k => { const s=SP[k]; return `<div class="rcard"><canvas width="144" height="144" data-k="${k}" aria-hidden="true"></canvas><div class="un">${s.names[0]}</div><div class="sub">${chip(s.type)}${s.rare?'<span class="meta">rare</span>':''}</div><div class="ud">${s.ability}.${s.rare?' Appears every 5th wave and can only be caught.':''}</div></div>`; };
   $('roster').innerHTML = ORDER.filter(k=>!SP[k].rare).map(rcard).join('');
   $('rares').innerHTML = RARES.map(rcard).join('');
   document.querySelectorAll('#roster canvas, #rares canvas').forEach(cn => drawPortrait(cn, cn.dataset.k, 0, false));
@@ -2000,9 +2008,19 @@ function renderHero(dt){
 }
 $('homePlay').addEventListener('click', openMenu);
 $('homeEndless').addEventListener('click', () => startRun('endless'));
-$('homeCosmetics').addEventListener('click', () => { openMenu(); const w=$('wardrobe'); try { w.scrollIntoView({behavior: REDUCED?'auto':'smooth', block:'start'}); } catch(e) {} });
+function openShop(target){
+  hideTip(); leaveLobbyScreen(); closeTutorial(); inHome=false; inMenu=true;
+  document.body.classList.remove('in-home','in-game'); document.body.classList.add('in-menu');
+  $('home').hidden=true; $('menu').hidden=true; $('shopPage').hidden=false;
+  renderPass(); renderShop(); $('gemBank').textContent=profile.gems;
+  try { if (target){ $(target).scrollIntoView({block:'start'}); } else window.scrollTo(0,0); } catch(e) {}
+}
+$('homeCosmetics').addEventListener('click', () => openShop('wardrobe'));
+$('shopHome').addEventListener('click', openHome);
+$('shopTrails').addEventListener('click', openMenu);
+$('menuShop').addEventListener('click', () => openShop());
 $('toHome').addEventListener('click', openHome);
-$('homePass').addEventListener('click', () => { openMenu(); const el=$('pass'); try { el.scrollIntoView({behavior: REDUCED?'auto':'smooth', block:'start'}); } catch(e) {} });
+$('homePass').addEventListener('click', () => openShop());
 $('homeBtn').addEventListener('click', () => {
   leaveRun(openHome);
 });
@@ -2177,7 +2195,7 @@ function itemFromKey(key){
 }
 function addPassXP(n){
   const before=passTier(); profile.pass.xp+=n; saveProfile();
-  const after=passTier(); if (after>before) toast(`Trail Pass tier ${after} reached! Claim it from Trails & upgrades.`);
+  const after=passTier(); if (after>before) toast(`Trail Pass tier ${after} reached! Claim it from Cosmetics & Trail Pass.`);
 }
 function claimTier(i, prem){
   const list = prem ? profile.pass.claimedP : profile.pass.claimed;
@@ -2731,10 +2749,11 @@ function renderTutorial(){
 function openTutorial(start=0){
   hideTip(); leaveLobbyScreen(); inHome=false; inMenu=true; tutStep=start;
   document.body.classList.remove('in-home','in-game'); document.body.classList.add('in-menu','in-tut');
-  $('home').hidden=true; $('menu').hidden=true; $('tutorial').hidden=false;
+  $('home').hidden=true; $('menu').hidden=true; closeShop(); $('tutorial').hidden=false;
   renderTutorial(); try { window.scrollTo(0,0); } catch(e) {}
 }
-function closeTutorial(){ const el=document.getElementById('tutorial'); if (el && !el.hidden){ el.hidden=true; document.body.classList.remove('in-tut'); } }
+function closeShop(){ const el=document.getElementById('shopPage'); if (el) el.hidden=true; }
+function closeTutorial(){ closeShop(); const el=document.getElementById('tutorial'); if (el && !el.hidden){ el.hidden=true; document.body.classList.remove('in-tut'); } }
 $('homeTut').addEventListener('click', () => openTutorial(0));
 $('homeTut2').addEventListener('click', () => openTutorial(0));
 $('tutHome').addEventListener('click', openHome);
