@@ -270,6 +270,8 @@ kbd{font-family:var(--f-data);font-size:10px;background:var(--panel2);border:1px
 .tier.legend{border:1px solid transparent;background:linear-gradient(160deg,#3a2c10,#1f1a10) padding-box,linear-gradient(135deg,#ffd84a,#ff9a1f,#fff3a0,#ffd84a) border-box}
 .tag.legend{background:linear-gradient(90deg,#ffd84a,#ff9a1f);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:700}
 .trackkey .kp::before{background:#3a3320;border-color:rgba(255,201,74,.6)}
+.redeem{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:flex-end;margin:0 0 14px}
+.redeem .fld{flex:0 1 220px}
 .gemstore{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px;margin:0 0 14px}
 .gs-head{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;margin-bottom:10px}
 .gs-head b{font-size:15px}
@@ -323,9 +325,7 @@ body.in-lobby .main, body.in-lobby .stats, body.in-lobby header .diffrow{display
 .steps li{background:var(--panel2);border-radius:8px;padding:14px;counter-increment:s;font-size:13px;color:var(--muted);line-height:1.55}
 .steps li::before{content:counter(s);display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--sun);color:#221a00;font-family:var(--f-display);margin-bottom:10px}
 .steps b{display:block;color:var(--ink);font-size:15px;margin-bottom:4px}
-.roster{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px}
-.rcard{justify-items:center;text-align:center}
-.rcard .sub{justify-content:center}
+.roster{display:grid;grid-template-columns:repeat(auto-fill,minmax(136px,1fr));gap:10px}
 .rcard{background:var(--panel2);border-radius:8px;padding:12px;display:grid;gap:6px;align-content:start;min-width:0}
 .rcard canvas{width:72px;height:72px}
 .rcard .un{font-weight:700;font-size:15px}
@@ -380,7 +380,7 @@ body.in-lobby .main, body.in-lobby .stats, body.in-lobby header .diffrow{display
       <div>
         <p class="eyebrow">A creature-catching tower defense</p>
         <h2 class="hero-title">Hold the trail. <em>Protect the Grove.</em></h2>
-        <p class="lede">Station wildlings, catch rare ones, evolve your team and hold the trail.</p>
+        <p class="lede">Station elemental wildlings along winding trails, catch the wild ones that wander in, and evolve your team down utility or damage paths. Clear the campaign, then see how long you last in Endless.</p>
         <div class="row hero-cta">
           <button class="btn primary big" id="homePlay" type="button">Play</button>
           <button class="btn big" id="homeEndless" type="button">Quick Endless</button>
@@ -395,10 +395,37 @@ body.in-lobby .main, body.in-lobby .stats, body.in-lobby header .diffrow{display
       <canvas id="heroCv" aria-label="Wildlings defending a trail"></canvas>
     </div>
     <div class="card">
+      <div class="up-head"><h2>How to play</h2><button class="btn" id="homeTut2" type="button">Full tutorial</button></div>
+      <ol class="steps">
+        <li><b>Station wildlings</b>Pick a wildling from your party and tap open grass beside the trail. Each type has its own ability.</li>
+        <li><b>Start the wave</b>Wild ones follow the trail toward the Grove. Each one that slips through costs Grove health.</li>
+        <li><b>Catch new species</b>Throw a seed pod at a weakened wild one. A catch unlocks that species, including the rare Lumi.</li>
+        <li><b>Train and evolve</b>Knockouts earn XP. At Lv 5, 10 and 15, pay to evolve and choose a utility or a damage ability.</li>
+      </ol>
+    </div>
+    <div class="card">
       <h2>Meet the wildlings</h2>
       <div class="roster" id="roster"></div>
       <h3>Rare wildlings · catch only</h3>
       <div class="roster rares" id="rares"></div>
+      <h3>Wild ones to watch for</h3>
+      <div class="traits" id="traitList"></div>
+    </div>
+    <div class="hgrid">
+      <div class="card">
+        <h2>Type matchups · 2× damage</h2>
+        <div class="chart" id="chart2"></div>
+      </div>
+      <div class="card">
+        <h2>Controls</h2>
+        <dl class="keys">
+          <dt><kbd>1</kbd>–<kbd>9</kbd></dt><dd>Pick a wildling from your party</dd>
+          <dt><kbd>Space</kbd></dt><dd>Start the next wave</dd>
+          <dt><kbd>C</kbd></dt><dd>Throw a seed pod</dd>
+          <dt><kbd>T</kbd></dt><dd>Change the selected wildling's targeting</dd>
+          <dt><kbd>Esc</kbd></dt><dd>Cancel</dd>
+        </dl>
+      </div>
     </div>
   </section>
 
@@ -489,6 +516,7 @@ body.in-lobby .main, body.in-lobby .stats, body.in-lobby header .diffrow{display
       <div class="up-head"><h2>Cosmetics</h2><div class="starbank"><b class="gem" id="gemBank">0</b> gems</div></div>
       <p class="empty">Every wildling has its own skins and accessories. Map themes restyle every trail. They never change stats. Earn gems by clearing waves (1 each) and trails (5, plus 10 for every new star).</p>
       <div class="gemstore"><div class="gs-head"><b>Get gems</b><span class="meta" id="storeNote"></span></div><div class="packs" id="packs"></div></div>
+      <div class="redeem"><label class="fld" for="codeIn" style="margin:0">Redeem code<input id="codeIn" maxlength="24" autocomplete="off" placeholder="Enter a code"></label><button class="btn" id="codeBtn" type="button">Redeem</button><span class="meta" id="codeMsg" role="status"></span></div>
       <div class="shop-row">
         <div class="seg" id="shopTabs" role="group" aria-label="Cosmetic type"><button type="button" data-t="skin">Skins</button><button type="button" data-t="hat">Accessories</button><button type="button" data-t="map">Map themes</button><button type="button" data-t="orb">Orbs</button></div>
         <div class="seg" id="shopSp" role="group" aria-label="Wildling"></div>
@@ -1939,10 +1967,12 @@ function renderHome(){
   $('homeStats').innerHTML = [['Stars',`${starsEarned()}/${LEVELS.length*3}`],['Trails',`${cleared}/${LEVELS.length}`],['Best wave',bestAny],['Gems',profile.gems],['Pass tier',`${passTier()}/${PASS.length}`]].map(([l,v])=>`<div class="stat"><span>${l}</span><b>${v}</b></div>`).join('');
   $('homePlay').textContent = (profile.saves && profile.saves.campaign) ? 'Resume a run' : cleared ? 'Continue' : 'Play';
   const unc=unclaimed(); $('homePass').textContent = unc ? `Trail Pass · ${unc} to claim` : 'Trail Pass';
-  const rcard = k => { const s=SP[k]; return `<div class="rcard"><canvas width="144" height="144" data-k="${k}" aria-hidden="true"></canvas><div class="un">${s.names[0]}</div><div class="sub">${chip(s.type)}${s.rare?'<span class="meta">rare</span>':''}</div></div>`; };
+  const rcard = k => { const s=SP[k]; return `<div class="rcard"><canvas width="144" height="144" data-k="${k}" aria-hidden="true"></canvas><div class="un">${s.names[0]}</div><div class="sub">${chip(s.type)}${s.rare?'<span class="meta">rare</span>':''}</div><div class="ud">${s.ability}.${s.rare?' Appears every 5th wave and can only be caught.':''}</div><div class="meta">${s.names.slice(1).join(' → ')}</div></div>`; };
   $('roster').innerHTML = ORDER.filter(k=>!SP[k].rare).map(rcard).join('');
   $('rares').innerHTML = RARES.map(rcard).join('');
   document.querySelectorAll('#roster canvas, #rares canvas').forEach(cn => drawPortrait(cn, cn.dataset.k, 0, false));
+  $('chart2').innerHTML = $('chart').innerHTML;
+  $('traitList').innerHTML = Object.values(TRAITS).map(t => `<div class="trow"><span class="tdot" style="background:${t.col}"></span><b>${t.name}</b><span class="meta">wave ${t.from}+</span><span class="ud">${t.desc}</span></div>`).join('');
 }
 function renderHero(dt){
   heroT += dt;
@@ -2054,6 +2084,21 @@ const GEM_PACKS = [
 ];
 const STORE_LINKS = { pouch:'', sack:'', chest:'', hoard:'', premium:'' };
 // After the provider confirms the $5 premium pass payment, your server sets profile.pass.premium = true for that player.
+// Promo codes. Each code works once per player. Remove or change test codes before launch.
+const PROMO_CODES = { JAREDTEST: 10000 };
+function redeemCode(){
+  const code=$('codeIn').value.trim().toUpperCase(), msg=$('codeMsg');
+  profile.redeemed = Array.isArray(profile.redeemed) ? profile.redeemed : [];
+  if (!code){ msg.textContent='Enter a code first.'; return; }
+  const gems=PROMO_CODES[code];
+  if (!gems){ msg.textContent='That code is not valid.'; return; }
+  if (profile.redeemed.includes(code)){ msg.textContent='You already used that code.'; return; }
+  profile.redeemed.push(code); addGems(gems); sfx('coin');
+  msg.textContent=`+${gems.toLocaleString()} gems added!`; $('codeIn').value='';
+  renderMenu();
+}
+$('codeBtn').addEventListener('click', redeemCode);
+$('codeIn').addEventListener('keydown', e => { if (e.key==='Enter') redeemCode(); });
 document.addEventListener('click', ev => { const b=ev.target.closest && ev.target.closest('button[data-buy]'); if (b){ b.disabled=true; buyPack(b.dataset.buy).finally(() => { b.disabled=false; }); } });
 function renderPacks(){
   const live = CLOUD.status==='on' && !!CFG.paymentsEnabled;
@@ -2676,6 +2721,7 @@ function openTutorial(start=0){
 }
 function closeTutorial(){ const el=document.getElementById('tutorial'); if (el && !el.hidden){ el.hidden=true; document.body.classList.remove('in-tut'); } }
 $('homeTut').addEventListener('click', () => openTutorial(0));
+$('homeTut2').addEventListener('click', () => openTutorial(0));
 $('tutHome').addEventListener('click', openHome);
 $('tutPrev').addEventListener('click', () => { if (tutStep>0){ tutStep--; renderTutorial(); } });
 $('tutNext').addEventListener('click', () => { if (tutStep<TUT.length-1){ tutStep++; renderTutorial(); } else startRun('campaign', 0); });
