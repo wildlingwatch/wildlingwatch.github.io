@@ -618,7 +618,7 @@ const SP = {
       [{name:'Overload', desc:'Jolted foes take 20% more damage from everyone', mods:{vuln:.2, vulnDur:1.5}}, {name:'Thunder', desc:'+35% damage', mods:{dmgMul:.35}}],
       [{name:'Paralyze', desc:'Every foe in the chain is briefly stunned', mods:{stunAll:.2}}, {name:'Storm', desc:'Jumps to 2 more foes with almost no power loss', mods:{chain:2, chainFall:.1}}],
     ]},
-  pebble:{type:'rock', names:['Pebs','Slate','Crag','Titan'], body:'#b09a78', bodies:['#b09a78','#9c8664','#857055','#6e5b44'], dark:'#46392a', belly:'#e6dac3', acc:'#7c6a50', cost:95, dmg:24, range:2.2, rate:1.7, hp:64, spd:.85,
+  pebble:{type:'rock', names:['Pebs','Slate','Crag','Titan'], body:'#b09a78', bodies:['#b09a78','#9c8664','#857055','#6e5b44'], dark:'#46392a', belly:'#e6dac3', acc:'#7c6a50', cost:95, dmg:24, range:2.2, rate:1.7, hp:46, spd:.85,
     ability:'Quake: every heavy hit stuns', base:{stun:.6},
     evo:[
       [{name:'Tremor', desc:'Stuns last 50% longer', mods:{stun:.3}}, {name:'Boulder', desc:'+40% damage', mods:{dmgMul:.4}}],
@@ -1379,7 +1379,7 @@ const isAlpha = n => n%5===0 || (S.mode==='campaign' && n===LEVELS[S.level].wave
 function buildWave(n){
   const q=[], count=Math.min(6+Math.floor(n*1.7), 60), theme=waveTheme(n);
   const rnd = S.mode==='duel' ? rng(duelSeed*977+n) : Math.random;
-  const EZ=S.mode==='endless', hpMul=(EZ ? (1+.27*(n-1))*(1+.013*(n-1)*(n-1))*.88 : (1+.3*(n-1))*(1+.015*(n-1)*(n-1)))*DIFF[S.diff].hp*(S.mode==='campaign'?LEVELS[S.level].tough:1), gap=Math.max(.32,.85-n*.02);
+  const EZ=S.mode==='endless', hpMul=(EZ ? (1+.27*(n-1))*(1+.013*(n-1)*(n-1))*.88*(n<6 ? .75+.05*(n-1) : 1) : (1+.3*(n-1))*(1+.015*(n-1)*(n-1)))*DIFF[S.diff].hp*(S.mode==='campaign'?LEVELS[S.level].tough:1), gap=Math.max(.32,.85-n*.02);
   for (let i=0;i<count;i++){ const sp = rnd()<.6 ? theme : ORDER[(rnd()*6)|0]; q.push({sp, hp:SP[sp].hp*hpMul, boss:false, gap, trait:traitFor(n, rnd)}); }
   if (isAlpha(n)) q.push({sp:theme, hp:SP[theme].hp*hpMul*10, boss:true, gap:1.4});
   if (n%5===0){ const rk = RARES[(rnd()*RARES.length)|0]; q.splice(Math.floor(q.length/2), 0, {sp:rk, hp:SP[rk].hp*hpMul*3, boss:false, rare:true, gap}); }
