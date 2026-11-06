@@ -593,21 +593,21 @@ const SP = {
   ember:{type:'fire', names:['Emby','Cindr','Pyrox','Ignis'], body:'#f2703a', bodies:['#f2703a','#e4532b','#cf3b24','#b8261a'], dark:'#6e250f', belly:'#ffdcb0', acc:'#ffd23f', cost:60, dmg:8, range:2.5, rate:.8, hp:30, spd:1.5,
     ability:'Splash: scorches nearby wild ones for half damage', base:{splashR:.9, splashF:.5},
     evo:[
-      [{name:'Smoke', desc:'Splash also slows foes by 25%', mods:{slowF:-.25, slowDur:1}}, {name:'Blaze', desc:'+30% damage and splash hits for 65%', mods:{dmgMul:.3, splashF:.15}}],
+      [{name:'Ember Rain', desc:'Splash reaches 40% farther', mods:{splashR:.4}}, {name:'Blaze', desc:'+30% damage and splash hits for 65%', mods:{dmgMul:.3, splashF:.15}}],
       [{name:'Scorch', desc:'Foes it hits take 20% more damage from everyone', mods:{vuln:.2, vulnDur:2}}, {name:'Wildfire', desc:'Splash leaves a strong burn', mods:{burn:.5}}],
       [{name:'Ashfall', desc:'Much bigger splash and knockouts drop +3 berries', mods:{splashR:.5, bounty:3}}, {name:'Inferno', desc:'+40% damage and splash hits for 85%', mods:{dmgMul:.4, splashF:.2}}],
     ]},
   tide:{type:'water', names:['Drip','Surf','Tidal','Abyss'], body:'#3d9be9', bodies:['#3d9be9','#2f82d6','#2468bd','#1b4f9c'], dark:'#143a64', belly:'#d8f1ff', acc:'#8fe3ff', cost:50, dmg:5, range:2.7, rate:.65, hp:34, spd:1.35,
-    ability:'Soak: slows the target by 40%', base:{slowF:.6, slowDur:1.6},
+    ability:'Soak: hits splash nearby foes for 40% and slow the target by 30%', base:{slowF:.7, slowDur:1.2, splashR:.7, splashF:.4},
     evo:[
-      [{name:'Riptide', desc:'Slows by 50% and lasts longer', mods:{slowF:-.1, slowDur:.8}}, {name:'Torrent', desc:'+35% damage', mods:{dmgMul:.35}}],
-      [{name:'Whirlpool', desc:'Slows everything near the target', mods:{slowAoE:1}}, {name:'Geyser', desc:'20% chance to hit for triple damage', mods:{critC:.2, critM:3}}],
-      [{name:'Tsunami', desc:'Slows by 65% and lasts much longer', mods:{slowF:-.15, slowDur:1}}, {name:'Maelstrom', desc:'+40% damage, and soaked foes take 15% more damage', mods:{dmgMul:.4, vuln:.15, vulnDur:1.6}}],
+      [{name:'Riptide', desc:'Slows by 40% and splashes wider', mods:{slowF:-.1, splashR:.3}}, {name:'Torrent', desc:'+35% damage', mods:{dmgMul:.35}}],
+      [{name:'Whirlpool', desc:'Slows everything near the target', mods:{slowAoE:1}}, {name:'Geyser', desc:'Bigger splash that hits for 70%', mods:{splashR:.4, splashF:.3}}],
+      [{name:'Tidal Mark', desc:'Foes it hits take 15% more damage from everyone', mods:{vuln:.15, vulnDur:2}}, {name:'Maelstrom', desc:'+40% damage, and soaked foes take 15% more damage', mods:{dmgMul:.4, vuln:.15, vulnDur:1.6}}],
     ]},
   sprout:{type:'grass', names:['Sprig','Thorn','Grove','Elder'], body:'#5cbf4a', bodies:['#5cbf4a','#4aa83c','#3a9032','#2b7526'], dark:'#1f4d19', belly:'#e9f8cb', acc:'#2f8f2a', cost:55, dmg:4, range:2.4, rate:.75, hp:30, spd:1.45,
     ability:'Thorns: poison that keeps ticking', base:{poison:.9, poisonDur:3},
     evo:[
-      [{name:'Bramble', desc:'Poisoned foes are slowed by 20%', mods:{slowF:-.2, slowDur:3}}, {name:'Venom', desc:'Poison is 50% stronger', mods:{poison:.45}}],
+      [{name:'Bramble', desc:'Poison lasts 2 seconds longer', mods:{poisonDur:2}}, {name:'Venom', desc:'Poison is 50% stronger', mods:{poison:.45}}],
       [{name:'Spores', desc:'Poison spreads to a nearby foe', mods:{spread:1}}, {name:'Thornlash', desc:'+35% damage and poison lasts longer', mods:{dmgMul:.35, poisonDur:1.5}}],
       [{name:'Overgrow', desc:'Poison spreads to 2 more foes, who take 15% more damage', mods:{spread:2, vuln:.15, vulnDur:3}}, {name:'Toxin', desc:'Poison is twice as strong', mods:{poison:.9}}],
     ]},
@@ -616,42 +616,42 @@ const SP = {
     evo:[
       [{name:'Static', desc:'The first foe hit is briefly stunned', mods:{stun:.25}}, {name:'Surge', desc:'Jumps to 1 more foe and loses less power', mods:{chain:1, chainFall:.08}}],
       [{name:'Overload', desc:'Jolted foes take 20% more damage from everyone', mods:{vuln:.2, vulnDur:1.5}}, {name:'Thunder', desc:'+35% damage', mods:{dmgMul:.35}}],
-      [{name:'Paralyze', desc:'Every foe in the chain is briefly stunned', mods:{stunAll:.2}}, {name:'Storm', desc:'Jumps to 2 more foes with almost no power loss', mods:{chain:2, chainFall:.1}}],
+      [{name:'Storm Cloud', desc:'Lightning also strikes every foe near the first target for 50%', mods:{shockR:1, shockF:.5}}, {name:'Storm', desc:'Jumps to 2 more foes with almost no power loss', mods:{chain:2, chainFall:.1}}],
     ]},
   pebble:{type:'rock', names:['Pebs','Slate','Crag','Titan'], body:'#b09a78', bodies:['#b09a78','#9c8664','#857055','#6e5b44'], dark:'#46392a', belly:'#e6dac3', acc:'#7c6a50', cost:95, dmg:24, range:2.2, rate:1.7, hp:46, spd:.85,
-    ability:'Quake: every heavy hit stuns', base:{stun:.6},
+    ability:'Quake: heavy hits shake the ground, hurting nearby foes for 40%, with a 25% chance to stun', base:{stun:.5, stunChance:.25, shockR:.8, shockF:.4},
     evo:[
-      [{name:'Tremor', desc:'Stuns last 50% longer', mods:{stun:.3}}, {name:'Boulder', desc:'+40% damage', mods:{dmgMul:.4}}],
-      [{name:'Aftershock', desc:'A shockwave stuns everything nearby', mods:{shockR:.9, shockF:.2, stunAoE:.5}}, {name:'Rockslide', desc:'A shockwave hits nearby foes for 50%', mods:{shockR:.9, shockF:.5}}],
-      [{name:'Fault Line', desc:'Foes it hits take 25% more damage from everyone', mods:{vuln:.25, vulnDur:1.5}}, {name:'Avalanche', desc:'+50% damage and 25% chance to hit for 2.5x', mods:{dmgMul:.5, critC:.25, critM:2.5}}],
+      [{name:'Tremor', desc:'Stun chance rises to 45%', mods:{stunChance:.2}}, {name:'Boulder', desc:'+40% damage', mods:{dmgMul:.4}}],
+      [{name:'Fault Line', desc:'Foes it hits take 20% more damage from everyone', mods:{vuln:.2, vulnDur:2}}, {name:'Rockslide', desc:'Bigger quake that hits for 70%', mods:{shockR:.3, shockF:.3}}],
+      [{name:'Bedrock', desc:'+1 tile of reach and a wider quake', mods:{range:1, shockR:.3}}, {name:'Avalanche', desc:'+50% damage and 25% chance to hit for 2.5x', mods:{dmgMul:.5, critC:.25, critM:2.5}}],
     ]},
   gust:{type:'air', names:['Wisp','Gale','Tempo','Zephr'], body:'#bcd0f4', bodies:['#bcd0f4','#a7bff0','#93aeea','#7f9be2'], dark:'#33467a', belly:'#ffffff', acc:'#6f8fd6', cost:75, dmg:4, range:3.6, rate:.35, hp:22, spd:2.4,
     ability:'Tailwind: rapid strikes, long reach', base:{},
     evo:[
       [{name:'Updraft', desc:'+1 tile of reach', mods:{range:1}}, {name:'Twin Gale', desc:'Strikes 2 foes at once', mods:{multi:1}}],
       [{name:'Gust', desc:'Blows foes it hits back a little', mods:{knock:.1}}, {name:'Razor', desc:'+35% damage and 15% chance to hit for 2.5x', mods:{dmgMul:.35, critC:.15, critM:2.5}}],
-      [{name:'Downdraft', desc:'Foes it hits are slowed by 30%', mods:{slowF:-.3, slowDur:1}}, {name:'Cyclone', desc:'Strikes 2 more foes at once', mods:{multi:2}}],
+      [{name:'Downdraft', desc:'Strikes slam the ground, hitting foes near the target for 40%', mods:{splashR:.7, splashF:.4}}, {name:'Cyclone', desc:'Strikes 2 more foes at once', mods:{multi:2}}],
     ]},
   lumi:{type:'light', rare:true, names:['Lumi','Lumen','Solis','Aurum'], body:'#fff1b0', bodies:['#fff1b0','#ffe486','#ffd65a','#ffc72e'], dark:'#7a5a12', belly:'#ffffff', acc:'#ffd84a', cost:120, dmg:7.5, range:2.8, rate:.9, hp:40, spd:1.7,
     ability:'Prism: every hit is super effective', base:{super:1},
     evo:[
       [{name:'Glimmer', desc:'Foes it hits take 15% more damage from everyone', mods:{vuln:.15, vulnDur:2}}, {name:'Refract', desc:'Shots split to a 2nd foe', mods:{multi:1}}],
-      [{name:'Dazzle', desc:'Foes it hits are slowed by 30%', mods:{slowF:-.3, slowDur:1}}, {name:'Radiance', desc:'+25% damage', mods:{dmgMul:.25}}],
+      [{name:'Prism Burst', desc:'Hits also flash foes near the target for 35%', mods:{splashR:.7, splashF:.35}}, {name:'Radiance', desc:'+25% damage', mods:{dmgMul:.25}}],
       [{name:'Sunlit', desc:'Knockouts drop +4 berries', mods:{bounty:4}}, {name:'Flare', desc:'Shots split to 1 more foe', mods:{multi:1}}],
     ]},
   gloom:{type:'shadow', rare:true, names:['Gloom','Umbra','Nocta','Nyxa'], body:'#5a4a7a', bodies:['#5a4a7a','#4c3d6b','#3f315c','#33264d'], dark:'#1a1028', belly:'#8a7aaa', acc:'#c86bff', cost:120, dmg:8.5, range:3.0, rate:.8, hp:38, spd:1.8,
-    ability:'Fear: foes it hits turn and flee back up the trail for a moment', base:{fear:1},
+    ability:'Fear: foes it hits turn and flee back up the trail for a moment', base:{fear:.7},
     evo:[
-      [{name:'Terror', desc:'Fear lasts 60% longer', mods:{fear:.5}}, {name:'Shade Bolt', desc:'+30% damage', mods:{dmgMul:.3}}],
+      [{name:'Terror', desc:'Fear lasts 40% longer', mods:{fear:.3}}, {name:'Shade Bolt', desc:'+30% damage', mods:{dmgMul:.3}}],
       [{name:'Doom Mark', desc:'Foes it hits are marked. A marked foe bursts in shadow when defeated, hurting everything nearby', mods:{doom:.38}}, {name:'Twin Shade', desc:'Hits a 2nd foe at once', mods:{multi:1}}],
       [{name:'Haunting', desc:'Foes it defeats rise as shades that drift back up the trail, striking every foe they pass', mods:{haunt:1}}, {name:'Void', desc:'+40% damage and 20% chance to hit for 2.5x', mods:{dmgMul:.4, critC:.2, critM:2.5}}],
     ]},
   rime:{type:'ice', rare:true, names:['Rime','Frost','Glaci','Borea'], body:'#cfefff', bodies:['#cfefff','#bce6fb','#a8dcf5','#94d0ef'], dark:'#2a5a7a', belly:'#ffffff', acc:'#7fd0ff', cost:120, dmg:8, range:2.9, rate:.75, hp:44, spd:1.6,
-    ability:'Frostbite: each hit adds a frost stack that slows the foe. At 5 stacks it freezes solid', base:{frost:1, freezeAt:5, freezeDur:1.25},
+    ability:'Frostbite: hits add frost stacks. At 5 the foe freezes and ice shards burst out, hitting everything nearby', base:{frost:1, freezeAt:5, freezeDur:.9},
     evo:[
       [{name:'Deep Chill', desc:'Foes freeze at 4 stacks instead of 5', mods:{freezeAt:-1}}, {name:'Icicle', desc:'+30% damage', mods:{dmgMul:.3}}],
       [{name:'Frost Field', desc:'Hits leave an icy patch on the trail that slows everything crossing it', mods:{field:1}}, {name:'Shatter', desc:'Hits on frozen foes deal triple damage', mods:{shatter:3}}],
-      [{name:'Permafrost', desc:'Freezes last longer and spread 2 frost stacks to nearby foes', mods:{freezeDur:.6, spreadFrost:2}}, {name:'Hailstorm', desc:'Hits 2 more foes at once', mods:{multi:2}}],
+      [{name:'Permafrost', desc:'Freezes last a little longer and spread 2 frost stacks to nearby foes', mods:{freezeDur:.3, spreadFrost:2}}, {name:'Hailstorm', desc:'Hits 2 more foes at once', mods:{multi:2}}],
     ]},
 };
 const ORDER = ['ember','tide','sprout','volt','pebble','gust','lumi','gloom','rime'];
@@ -1346,9 +1346,9 @@ const canEvolve = t => t.stage<3 && t.lvl>=EVO_LV[t.stage];
 const atCap = t => t.lvl>=MAXLV || canEvolve(t);
 function params(t){
   const s=SP[t.sp];
-  const P={dmgMul:0, range:0, splashR:0, splashF:0, burn:0, burnDur:2.5, poison:0, poisonDur:3, spread:0, slowF:1, slowDur:0, slowAoE:0, stun:0, stunAoE:0, stunAll:0, shockR:0, shockF:0, chain:0, chainFall:.7, multi:0, knock:0, vuln:0, vulnDur:0, critC:0, critM:1, bounty:0, super:0, freeze:0, freezeDur:.7, fear:0, doom:0, haunt:0, frost:0, freezeAt:5, field:0, shatter:0, spreadFrost:0, ...s.base};
+  const P={dmgMul:0, range:0, splashR:0, splashF:0, burn:0, burnDur:2.5, poison:0, poisonDur:3, spread:0, slowF:1, slowDur:0, slowAoE:0, stun:0, stunAoE:0, stunAll:0, shockR:0, shockF:0, chain:0, chainFall:.7, multi:0, knock:0, vuln:0, vulnDur:0, critC:0, critM:1, bounty:0, super:0, freeze:0, freezeDur:.7, stunChance:0, fear:0, doom:0, haunt:0, frost:0, freezeAt:5, field:0, shatter:0, spreadFrost:0, ...s.base};
   (t.path||[]).forEach((c,i) => { const m=s.evo[i][c].mods; for (const k in m) P[k] = (k==='critM'||k==='vulnDur') ? Math.max(P[k],m[k]) : P[k]+m[k]; });
-  P.slowF = Math.max(.3, P.slowF);
+  P.slowF = Math.max(.6, P.slowF);
   return P;
 }
 function stats(t){ const s=SP[t.sp], st=t.stage||0, P=params(t); return { P, dmg: s.dmg*(1+.12*((t.lvl||1)-1))*[1,1.5,2.1,2.8][st]*(1+P.dmgMul)*(1+.06*upg('power')), range:(s.range+.3*st+P.range+.15*upg('reach'))*T, rate: s.rate*[1,.9,.82,.75][st] }; }
@@ -1429,7 +1429,8 @@ function addFrost(o, n, P, t, spread){
   o.frost=(o.frost||0)+n; o.frostT=2.5;
   const need=Math.max(2, P.freezeAt||5);
   if (o.frost>=need){
-    const fd=o.boss?P.freezeDur*.4:P.freezeDur; o.frost=0; o.stunT=Math.max(o.stunT,fd); o.frozenT=Math.max(o.frozenT||0,fd);
+    o.frost=0; if (hardCC(o, P.freezeDur)) o.frozenT=o.stunT;
+    if (t && t.sp){ const bd=stats(t).dmg; for (const q of enemies) if (q!==o && !q.dead && !q.under && Math.hypot(q.x-o.x,q.y-o.y)<1.25*T) damage(t, q, bd, false); fx.push({k:'ring', x:o.x, y:o.y, r:1.25*T, t:0, max:.3, color:'#9fe3ff'}); }
     fx.push({k:'ring', x:o.x, y:o.y, r:T*.55, t:0, max:.35, color:'#cfefff'}); sfx('shoot','ice');
     if (spread && P.spreadFrost) for (const q of enemies) if (q!==o && !q.dead && Math.hypot(q.x-o.x,q.y-o.y)<1.3*T) addFrost(q, P.spreadFrost, P, t, false);
   }
@@ -1518,23 +1519,32 @@ function afflict(t,o,P,dmg,primary){
   if (o.dead) return;
   if (P.burn) burn(o,t,dmg*P.burn,P.burnDur);
   if (P.poison){ const m=CHART.grass[o.type] ?? 1; o.poisonT=P.poisonDur; o.poisonDps=Math.max(o.poisonDps, dmg*P.poison*m); o.poisonSrc=t; }
-  if (P.slowF<1 && P.slowDur>0){ o.slowT=Math.max(o.slowT,P.slowDur); o.slowF=Math.min(o.slowF,P.slowF); }
+  if (primary && P.slowF<1 && P.slowDur>0){ o.slowT=Math.max(o.slowT,P.slowDur); o.slowF=Math.max(.6, Math.min(o.slowF,P.slowF)); }
   if (P.vuln){ o.vulnT=Math.max(o.vulnT||0,P.vulnDur||1.5); o.vulnF=Math.max(o.vulnF||0,P.vuln); }
-  if (primary && P.stun) o.stunT=Math.max(o.stunT, o.boss?P.stun*.4:P.stun);
+  if (primary && P.stun && (!P.stunChance || Math.random()<P.stunChance)) hardCC(o, P.stun);
   if (primary && P.knock && !o.boss) o.dist=Math.max(0, o.dist-P.knock*T);
-  if (primary && P.fear && !(o.fearCD>0)){ const f=o.boss?P.fear*.4:P.fear; o.fearT=f; o.fearCD=f+1.2; }
+  if (primary && P.fear) hardCC(o, P.fear, 'fear');
   if (P.doom){ o.doomT=4; o.doomP=P.doom; o.doomSrc=t; }
   if (P.frost) addFrost(o, P.frost, P, t, true);
   if (primary && P.field) addZone(o);
   if (primary && P.freeze && Math.random()<P.freeze){ const fd=o.boss?P.freezeDur*.4:P.freezeDur; o.stunT=Math.max(o.stunT,fd); o.frozenT=Math.max(o.frozenT||0,fd); }
 }
-const stunFor = (o,s) => { if (!o.dead) o.stunT=Math.max(o.stunT, o.boss?s*.4:s); };
+// Stuns, freezes and fear share one limit: after one ends, the foe shrugs off the next for 1.5 seconds.
+function hardCC(o, dur, kind){
+  if (!o || o.dead || o.ccCD>0) return false;
+  const d = o.boss ? dur*.4 : dur;
+  if (kind==='fear') o.fearT=d; else o.stunT=Math.max(o.stunT, d);
+  o.ccCD = d + 1.5;
+  return true;
+}
+const stunFor = (o,s) => hardCC(o, s);
 function fire(t,e,st){
   sfx('shoot', SP[t.sp].type);
   const P=st.P;
   if (t.sp==='volt'){
     const hit=[e], pts=[[t.x,t.y-10],[e.x,e.y]]; let cur=e, d=st.dmg;
     damage(t,e,d,true,P); afflict(t,e,P,d,true); if (P.stunAll) stunFor(e,P.stunAll);
+    if (P.shockR){ const R=P.shockR*T; fx.push({k:'ring', x:e.x, y:e.y, r:R, t:0, max:.3, color:'#fff3a0'}); for (const o of enemies) if (o!==e && !o.dead && !o.under && Math.hypot(o.x-e.x,o.y-e.y)<R) damage(t,o,d*P.shockF,false,P); }
     for (let i=0;i<P.chain;i++){
       d*=Math.min(.95,P.chainFall); let bestE=null, bd=1.8*T;
       for (const o of enemies){ if (o.dead||o.under||hit.includes(o)) continue; const dd=Math.hypot(o.x-cur.x,o.y-cur.y); if (dd<bd){ bd=dd; bestE=o; } }
@@ -1551,12 +1561,12 @@ function impact(p){
   const t=p.t, e=p.tgt, P=p.P;
   damage(t,e,p.dmg,true,P); afflict(t,e,P,p.dmg,true);
   if (P.splashR){
-    const R=P.splashR*T; fx.push({k:'ring', x:e.x, y:e.y, r:R, t:0, max:.3, color:P.burn?'#ff5a1f':'#ff9a3c'});
+    const R=P.splashR*T; fx.push({k:'ring', x:e.x, y:e.y, r:R, t:0, max:.3, color:P.burn?'#ff5a1f':(t.sp==='ember'?'#ff9a3c':TYPES[SP[t.sp].type])});
     for (const o of enemies) if (o!==e && !o.dead && Math.hypot(o.x-e.x,o.y-e.y)<R){ damage(t,o,p.dmg*P.splashF,false,P); afflict(t,o,P,p.dmg*P.splashF,false); }
   }
   if (P.slowAoE){
     const R=P.slowAoE*T; fx.push({k:'ring', x:e.x, y:e.y, r:R, t:0, max:.35, color:'#8fe3ff'});
-    for (const o of enemies) if (o!==e && !o.dead && Math.hypot(o.x-e.x,o.y-e.y)<R){ o.slowT=Math.max(o.slowT,P.slowDur); o.slowF=Math.min(o.slowF,P.slowF); }
+    for (const o of enemies) if (o!==e && !o.dead && Math.hypot(o.x-e.x,o.y-e.y)<R){ o.slowT=Math.max(o.slowT,P.slowDur); o.slowF=Math.max(.6, Math.min(o.slowF,P.slowF)); }
   }
   if (P.spread){
     const near=enemies.filter(o=>o!==e && !o.dead && Math.hypot(o.x-e.x,o.y-e.y)<1.3*T).sort((a,b)=>Math.hypot(a.x-e.x,a.y-e.y)-Math.hypot(b.x-e.x,b.y-e.y)).slice(0,P.spread);
@@ -1584,9 +1594,10 @@ function update(dt){
     if (e.frostT>0){ e.frostT-=dt; if (e.frostT<=0) e.frost=0; }
     if (e.doomT>0) e.doomT-=dt;
     if (e.fearCD>0) e.fearCD-=dt;
+    if (e.ccCD>0) e.ccCD-=dt;
     if (e.trait) traitTick(e, dt);
     if (e.stunT>0){ e.stunT-=dt; continue; }
-    const step = e.spd*(e.slowT>0?e.slowF:1)*(1-Math.min(.3,(e.frost||0)*.06))*(e.under?1.3:1)*(e.trait==='swift' && e.dashT<.6 ? 1.9 : 1)*T*dt;
+    const step = e.spd*(e.slowT>0?e.slowF:1)*(1-Math.min(.2,(e.frost||0)*.04))*(e.under?1.3:1)*(e.trait==='swift' && e.dashT<.6 ? 1.9 : 1)*T*dt;
     if (e.fearT>0){ e.fearT-=dt; e.dist=Math.max(0, e.dist-step*.75); } else e.dist += step;
     const px=e.x; [e.x,e.y]=posAt(e.dist, e.route); if (Math.abs(e.x-px)>.01) e.face = e.x<px?-1:1;
     if (e.dist>=ROUTES[e.route].total){ e.dead=true; if (e.rare){ toast(`The rare ${SP[e.sp].names[0]} slipped away`); continue; } S.lives-=e.boss?5:1; sfx('leak'); pop(W-30, e.y-20, e.boss?'-5 Grove':'-1 Grove', '#ff6680', 11); fx.push({k:'flash', t:0, max:.3}); }
