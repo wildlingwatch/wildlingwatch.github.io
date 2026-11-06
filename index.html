@@ -22,11 +22,16 @@
 }
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body)}
 .wrap{max-width:1200px;margin:0 auto;padding-block:16px 32px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:14px}
-header{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"title tools" "stats stats";align-items:start;gap:12px 16px}
+header{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"title tools";align-items:start;gap:12px 16px}
 header > div:first-child{grid-area:title;min-width:0}
 h1{font-family:var(--f-display);font-weight:400;font-size:clamp(24px,3.6vw,34px);margin:0;color:var(--sun);letter-spacing:.01em;line-height:1}
 .tag{color:var(--muted);font-size:13px;margin:6px 0 0}
-.stats{grid-area:stats;display:flex;gap:8px;flex-wrap:wrap;justify-self:start}
+.stats{display:flex;gap:8px;flex-wrap:wrap}
+.board .stats{position:absolute;left:8px;top:8px;right:8px;gap:6px;pointer-events:none;z-index:2}
+.board .stat{display:flex;align-items:baseline;gap:6px;min-width:0;padding:4px 9px;border-radius:7px;background:rgba(10,20,14,.8);border-color:rgba(255,255,255,.12);backdrop-filter:blur(2px)}
+.board .stat b{font-size:15px}
+.board .stat span{font-size:9px}
+@media (max-width:520px){.board .stats{left:4px;top:4px;gap:4px}.board .stat{padding:2px 6px;gap:4px}.board .stat b{font-size:12px}.board .stat span{font-size:8px;letter-spacing:.06em}}
 .stat{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 10px;display:grid;gap:2px;min-width:78px}
 .stat b{font-family:var(--f-data);font-weight:400;font-size:18px;font-variant-numeric:tabular-nums;line-height:1}
 .stat span{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
@@ -35,7 +40,7 @@ h1{font-family:var(--f-display);font-weight:400;font-size:clamp(24px,3.6vw,34px)
 @media (max-width:920px){.main{grid-template-columns:minmax(0,1fr)}}
 .board{position:relative;border-radius:10px;overflow:hidden;border:2px solid var(--line);background:#3e7b3c}
 #game{display:block;width:100%;height:auto;touch-action:manipulation;cursor:pointer;user-select:none;-webkit-user-select:none}
-.hint{position:absolute;left:10px;right:10px;top:10px;margin:0 auto;max-width:440px;background:rgba(12,24,18,.88);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:13px;text-align:center;pointer-events:none}
+.hint{position:absolute;left:10px;right:10px;bottom:52px;margin:0 auto;max-width:440px;background:rgba(12,24,18,.88);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:13px;text-align:center;pointer-events:none}
 .toast{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);background:var(--sun);color:#221a00;font-weight:700;border-radius:999px;padding:6px 14px;font-size:13px;white-space:nowrap;max-width:calc(100% - 20px);overflow:hidden;text-overflow:ellipsis;pointer-events:none}
 .overlay{position:absolute;inset:0;display:grid;place-items:center;background:rgba(8,16,12,.78);text-align:center;padding:16px}
 .overlay h2{font-family:var(--f-display);font-weight:400;color:var(--berry);font-size:clamp(22px,4vw,34px);margin:0 0 8px}
@@ -50,7 +55,11 @@ h1{font-family:var(--f-display);font-weight:400;font-size:clamp(24px,3.6vw,34px)
 .btn[disabled]{opacity:.45;cursor:not-allowed}
 .btn:focus-visible,.mon:focus-visible{outline:2px solid var(--sun);outline-offset:2px}
 label.auto{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--muted);cursor:pointer}
-aside{display:grid;gap:12px;min-width:0}
+aside{display:grid;gap:12px;min-width:0;align-content:start}
+@media (min-width:921px){
+  aside{contain:size;align-self:stretch;overflow-y:auto;overscroll-behavior:contain;padding-right:4px;scrollbar-width:thin}
+}
+@media (max-width:920px){ .main > section{order:1} #towerCard{order:2} aside{order:3} }
 .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px}
 .card h2{font-family:var(--f-data);font-weight:400;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
 .party{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -66,6 +75,30 @@ aside{display:grid;gap:12px;min-width:0}
 .cost,.meta{font-family:var(--f-data);font-size:11px;color:var(--muted)}
 .free{color:var(--sun)}
 .chip{display:inline-block;font-family:var(--f-data);font-size:10px;line-height:1;padding:3px 5px;border-radius:4px;color:#10160f;text-transform:uppercase}
+#towerCard{grid-column:1/-1}
+#towerPanel.wide .tp-head canvas{width:52px;height:52px}
+#towerPanel.wide .tp-name{font-size:16px}
+#towerPanel.wide .kv{gap:3px 12px}
+body.in-game .tag{display:none}
+body.in-game h1{font-size:24px}
+body.in-game header > div:first-child{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px}
+body.in-game header .diffrow{margin-top:0}
+body.in-game .wrap{padding-block:10px 24px}
+@media (min-width:921px){
+  body.in-game .main > section{justify-self:center;width:min(100%, max(420px, calc((100vh - 410px) * 1.6)))}
+}
+#towerPanel.wide{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px 20px;align-items:start}
+#towerPanel.wide > p.empty{grid-column:1/-1}
+.tp-col{min-width:0;display:grid;gap:6px;align-content:start}
+.tp-col .kv{margin:0}
+.tp-col .learned{margin:0}
+.tp-col .tgt-lbl{margin:0}
+.tp-col #tgtDesc{margin:0}
+.tp-col .row{margin-top:4px}
+.tp-col .bar{margin:4px 0 0}
+.tp-ability{font-size:13px;line-height:1.5}
+#towerPanel.wide .evo-pick{grid-column:1/-1;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin:0}
+#towerPanel.wide .evo-pick > .meta{grid-column:1/-1}
 .tp-head{display:flex;gap:10px;align-items:center}
 .tp-head canvas{width:64px;height:64px;background:var(--panel2);border-radius:8px;flex:none}
 .tp-name{font-family:var(--f-display);font-weight:400;font-size:18px;line-height:1.1}
@@ -303,12 +336,6 @@ body.in-lobby .main, body.in-lobby .stats, body.in-lobby header .diffrow{display
         <p class="meta">Calm music plays between waves and a faster track during waves. Sound starts after your first tap or key press. Press <kbd>M</kbd> to mute or unmute everything.</p>
       </div>
     </div>
-    <div class="stats">
-      <div class="stat"><span>Wave</span><b id="sWave">0</b></div>
-      <div class="stat lives"><span>Grove</span><b id="sLives">20</b></div>
-      <div class="stat berries"><span>Berries</span><b id="sBerries">0</b></div>
-      <div class="stat"><span id="sBestLbl">Best</span><b id="sBest">0</b></div>
-    </div>
   </header>
 
   <section class="home" id="home" hidden>
@@ -446,6 +473,12 @@ body.in-lobby .main, body.in-lobby .stats, body.in-lobby header .diffrow{display
     <section>
       <div class="board" id="board">
         <canvas id="game" aria-label="Game board"></canvas>
+        <div class="stats">
+          <div class="stat"><span>Wave</span><b id="sWave">0</b></div>
+          <div class="stat lives"><span>Grove</span><b id="sLives">20</b></div>
+          <div class="stat berries"><span>Berries</span><b id="sBerries">0</b></div>
+          <div class="stat"><span id="sBestLbl">Best</span><b id="sBest">0</b></div>
+        </div>
         <div class="hint" id="hint">Pick a wildling from your party, then tap open grass to station it. Press Start wave when ready.</div>
         <div class="toast" id="toast" hidden></div>
         <div class="overlay" id="over" hidden>
@@ -485,7 +518,7 @@ body.in-lobby .main, body.in-lobby .stats, body.in-lobby header .diffrow{display
       </div>
     </section>
 
-    <aside>
+    <aside id="sidebar">
       <div class="card" id="duelCard" hidden>
         <h2>Duel</h2>
         <div class="rival"><span class="nm2" id="rvName">Rival</span><span class="pst" id="rvState"></span><span class="meta">Their Grove</span><b id="rvLives">–</b><span class="meta">Their wave</span><b id="rvWave">–</b></div>
@@ -494,10 +527,6 @@ body.in-lobby .main, body.in-lobby .stats, body.in-lobby header .diffrow{display
       <div class="card">
         <h2>Your party</h2>
         <div class="party" id="party"></div>
-      </div>
-      <div class="card" id="towerCard">
-        <h2>Stationed wildling</h2>
-        <div id="towerPanel"><p class="empty">Tap a wildling on the board to see its stats, train it, or release it.</p></div>
       </div>
       <div class="card">
         <h2>Type matchups · 2× damage</h2>
@@ -519,6 +548,10 @@ body.in-lobby .main, body.in-lobby .stats, body.in-lobby header .diffrow{display
         </ul>
       </div>
     </aside>
+    <div class="card" id="towerCard">
+        <h2>Stationed wildling</h2>
+        <div id="towerPanel" class="wide"><p class="empty">Tap a wildling on the board to see its stats, train it, or release it.</p></div>
+    </div>
   </div>
 </div>
 
@@ -1771,10 +1804,10 @@ $('confirmYes').addEventListener('click', () => { const a=pendingAct; pendingAct
 $('confirmNo').addEventListener('click', () => { pendingAct=null; paused=wasPaused; $('confirm').hidden=true; });
 
 /* ---------- trails & upgrades menu ---------- */
-function openMenu(){ hideTip(); leaveLobbyScreen(); inHome=false; document.body.classList.remove('in-home'); $('home').hidden=true; inMenu=true; document.body.classList.add('in-menu'); $('menu').hidden=false; renderMenu(); try { window.scrollTo(0,0); } catch(e) {} }
-function closeMenu(){ inMenu=false; inHome=false; inLobby=false; document.body.classList.remove('in-menu','in-home','in-lobby'); $('menu').hidden=true; $('home').hidden=true; $('duel').hidden=true; }
+function openMenu(){ hideTip(); leaveLobbyScreen(); inHome=false; document.body.classList.remove('in-home','in-game'); $('home').hidden=true; inMenu=true; document.body.classList.add('in-menu'); $('menu').hidden=false; renderMenu(); try { window.scrollTo(0,0); } catch(e) {} }
+function closeMenu(){ inMenu=false; inHome=false; inLobby=false; document.body.classList.remove('in-menu','in-home','in-lobby'); document.body.classList.add('in-game'); $('menu').hidden=true; $('home').hidden=true; $('duel').hidden=true; }
 let inHome=false;
-function openHome(){ hideTip(); leaveLobbyScreen(); inMenu=false; inHome=true; document.body.classList.remove('in-menu'); document.body.classList.add('in-home'); $('menu').hidden=true; $('home').hidden=false; renderHome(); try { window.scrollTo(0,0); } catch(e) {} }
+function openHome(){ hideTip(); leaveLobbyScreen(); inMenu=false; inHome=true; document.body.classList.remove('in-menu','in-game'); document.body.classList.add('in-home'); $('menu').hidden=true; $('home').hidden=false; renderHome(); try { window.scrollTo(0,0); } catch(e) {} }
 const HERO_WP=[[-1,7],[4,7],[4,3],[11,3],[11,7],[16,7]];
 const HERO_TW=[[2,5,'ember',1],[6,5,'tide',0],[8,1,'volt',2],[9,5,'sprout',3],[13,5,'pebble',1],[14,1,'gust',2],[6,1,'lumi',3]];
 const heroCv=$('heroCv'), hctx=heroCv.getContext('2d'); heroCv.width=W*DPR; heroCv.height=H*DPR;
@@ -2126,6 +2159,10 @@ function syncParty(){
   });
 }
 let panelKey='', pickFor=null;
+function showTowerCard(){
+  const sb=$('sidebar'); if (!sb) return;
+  if (getComputedStyle(sb).overflowY==='auto'){ if (sb.scrollTop>0) sb.scrollTo({top:0, behavior: REDUCED?'auto':'smooth'}); }
+}
 function renderTowerPanel(force){
   const el=$('towerPanel'), t=selected && S.towers.includes(selected) ? selected : null;
   if (!t){ if (force || panelKey!=='none'){ el.innerHTML=`<p class="empty">${placing?`Tap open grass to station ${SP[placing].names[0]}. Its reach is shown on the board.`:'Tap a wildling on the board to see its stats, train it, or release it.'}</p>`; panelKey='none'; } return; }
@@ -2134,28 +2171,38 @@ function renderTowerPanel(force){
   panelKey=key;
   const s=SP[t.sp], st=stats(t), ready=canEvolve(t), picking=ready && pickFor===t.id;
   el.innerHTML = `
+    <div class="tp-col">
     <div class="tp-head"><canvas width="128" height="128" id="tpPort"></canvas>
       <div style="min-width:0"><div class="tp-name">${nameOf(t)}</div><div class="sub">${chip(s.type)}<span class="meta">Lv ${t.lvl}${t.lvl>=MAXLV?' · max':''}</span></div></div></div>
     <div class="bar"><i id="xpFill"></i></div>
     <div class="meta" id="xpText"></div>
+    <div class="row">
+      <button class="btn primary" type="button" id="trainBtn" ${!ready&&(t.lvl>=MAXLV||S.berries<trainCost(t))?'disabled':''}>${picking?'Cancel':trainLabel(t)}</button>
+      <button class="btn" type="button" id="sellBtn">${s.rare?'Return to party':'Release'}${refund(t)?` · +${refund(t)}`:''}</button>
+    </div>
+    </div>
+    <div class="tp-col">
+    <div class="meta tgt-lbl">Stats</div>
     <dl class="kv">
       <dt>Damage</dt><dd>${st.dmg.toFixed(1)}</dd>
       <dt>Reach</dt><dd>${(st.range/T).toFixed(1)} tiles</dd>
       <dt>Attacks</dt><dd>every ${st.rate.toFixed(2)}s</dd>
-      <dt>Ability</dt><dd>${s.ability}</dd>
       <dt>Evolution</dt><dd>${t.stage<3?`${s.names[t.stage+1]} at Lv ${EVO_LV[t.stage]}`:'Final form'}</dd>
     </dl>
+    </div>
+    <div class="tp-col">
+    <div class="meta tgt-lbl">Abilities</div>
+    <div class="tp-ability">${s.ability}</div>
     ${(t.path||[]).length?`<ul class="learned">${t.path.map((c,i)=>`<li><b>${s.evo[i][c].name}</b> (${c?'damage':'utility'}): ${s.evo[i][c].desc}</li>`).join('')}</ul>`:''}
-    ${picking?`<div class="evo-pick" id="evoPick"><div class="meta">Evolve into ${s.names[t.stage+1]} for ${evoCost(t)} berries. Pick one:</div>
-      ${s.evo[t.stage].map((o,i)=>`<button type="button" class="evo-opt" data-c="${i}" ${S.berries<evoCost(t)?'disabled':''}><span class="tagx ${i?'dmg':'util'}">${i?'Damage':'Utility'}</span><b>${o.name}</b><span>${o.desc}</span></button>`).join('')}
-      <div class="meta" id="evoNeed"></div></div>`:''}
+    ${''}    </div>
+    <div class="tp-col">
     <div class="meta tgt-lbl">Targeting</div>
     <div class="seg full" id="tgtSeg" role="group" aria-label="Targeting">${TARGETS.map(([k,l]) => `<button type="button" data-k="${k}" class="${(t.target||'first')===k?'on':''}" aria-pressed="${(t.target||'first')===k}">${l}</button>`).join('')}</div>
     <div class="meta" id="tgtDesc">${(TARGETS.find(([k]) => k===(t.target||'first'))||TARGETS[0])[2]}</div>
-    <div class="row">
-      <button class="btn primary" type="button" id="trainBtn" ${!ready&&(t.lvl>=MAXLV||S.berries<trainCost(t))?'disabled':''}>${picking?'Cancel':trainLabel(t)}</button>
-      <button class="btn" type="button" id="sellBtn">${s.rare?'Return to party':'Release'}${refund(t)?` · +${refund(t)}`:''}</button>
-    </div>`;
+    </div>
+    ${picking?`<div class="evo-pick" id="evoPick"><div class="meta">Evolve into ${s.names[t.stage+1]} for ${evoCost(t)} berries. Pick one:</div>
+      ${s.evo[t.stage].map((o,i)=>`<button type="button" class="evo-opt" data-c="${i}" ${S.berries<evoCost(t)?'disabled':''}><span class="tagx ${i?'dmg':'util'}">${i?'Damage':'Utility'}</span><b>${o.name}</b><span>${o.desc}</span></button>`).join('')}
+      <div class="meta" id="evoNeed"></div></div>`:''}`;
   drawPortrait($('tpPort'), t.sp, t.stage, false);
   updateXpBar(t);
   $('tgtSeg').addEventListener('click', ev => { const b=ev.target.closest('button[data-k]'); if (b) setTarget(t, b.dataset.k); });
@@ -2312,7 +2359,7 @@ async function supaJoin(name){
 function leaveLobbyScreen(){ if (mode==='duel') mode='endless'; if (duelRoom && !duelActive) duelLeave(); if (duelActive){ duelActive=false; duelLeave(); } inLobby=false; document.body.classList.remove('in-lobby'); $('duel').hidden=true; }
 function openDuelScreen(){
   hideTip(); inHome=false; inMenu=false; inLobby=true; duelActive=false; $('duelCard').hidden=true;
-  document.body.classList.remove('in-home','in-menu'); document.body.classList.add('in-lobby');
+  document.body.classList.remove('in-home','in-menu','in-game'); document.body.classList.add('in-lobby');
   $('home').hidden=true; $('menu').hidden=true; $('duel').hidden=false; $('duelName').value=duelName;
   if (duelRoom){ myDuel={...myDuel, ready:false, playing:false, alive:true}; duelPush(); }
   duelMsg=''; renderLobby(); checkRoom(); try { window.scrollTo(0,0); } catch(e) {}
