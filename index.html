@@ -1399,7 +1399,7 @@ function spawn(q){
     reward:Math.max(1, Math.round((q.boss?40+5*S.wave:q.rare?30+2*S.wave:3+Math.floor(S.wave/4))*D.reward*(S.mode==='endless'?1.08:1))), xpv:(4+S.wave*.5)*(q.boss?6:1),
     slowT:0, slowF:1, poisonT:0, poisonDps:0, poisonSrc:null, stunT:0, hitT:0, seed:Math.random()*10, face:1 };
   if (q.trait && TRAITS[q.trait]){
-    const tr=TRAITS[q.trait]; e.trait=q.trait; e.hp*=tr.hp; e.max=e.hp; e.spd*=tr.spd; e.reward+=1;
+    const tr=TRAITS[q.trait]; e.trait=q.trait; e.hp*=tr.hp; if (q.trait==='armored'){ e.armorF=Math.min(1, 34/s.hp); e.hp*=e.armorF; } e.max=e.hp; e.spd*=tr.spd; e.reward+=1;
     e.healT=1.5; e.burT=2+Math.random()*2; e.wardT=.8; e.dashT=1+Math.random()*2; e.shield=0;
     S.seen=S.seen||{}; if (!S.seen[q.trait]){ S.seen[q.trait]=1; toast(`New wild one: ${tr.name}. ${tr.desc.split('.')[0]}.`); }
   }
@@ -1417,7 +1417,7 @@ function damage(t,e,amt,show,P=params(t)){
   if (P.shatter && e.frozenT>0) amt*=P.shatter;
   let crit=false; if (P.critC && Math.random()<P.critC){ amt*=P.critM; crit=true; }
   let dmgv = amt*m;
-  if (e.trait==='armored'){ const ar=S.mode==='endless' ? 2+S.wave*.35 : 3+S.wave*.45; dmgv=Math.max(dmgv*.2, dmgv-ar); }
+  if (e.trait==='armored'){ const ar=(S.mode==='endless' ? 2+S.wave*.35 : 3+S.wave*.45)*(e.armorF||1); dmgv=Math.max(dmgv*.2, dmgv-ar); }
   if (e.shield>0){ const ab=Math.min(e.shield, dmgv); e.shield-=ab; dmgv-=ab; }
   e.hp -= dmgv; e.hitT = .12;
   if (show && crit) pop(e.x, e.y-e.r-12, 'crit!', '#ff9a3c', 10);
