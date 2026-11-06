@@ -257,6 +257,10 @@ body.in-lobby .main, body.in-lobby .stats, body.in-lobby header .diffrow{display
 .rcard canvas{width:72px;height:72px}
 .rcard .un{font-weight:700;font-size:15px}
 .rcard .ud{font-size:12px;color:var(--muted);line-height:1.5}
+.traits{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+.trow{background:var(--panel2);border-radius:8px;padding:10px 12px;display:grid;grid-template-columns:auto 1fr auto;gap:4px 10px;align-items:center}
+.trow .tdot{width:12px;height:12px;border-radius:50%}
+.trow .ud{grid-column:1/-1;font-size:12px;color:var(--muted);line-height:1.5}
 .hgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
 @media (max-width:720px){.hgrid{grid-template-columns:minmax(0,1fr)}}
 .keys{display:grid;grid-template-columns:auto 1fr;gap:8px 14px;font-size:13px;color:var(--muted);margin:0}
@@ -336,6 +340,8 @@ body.in-lobby .main, body.in-lobby .stats, body.in-lobby header .diffrow{display
       <div class="roster" id="roster"></div>
       <h3>Rare wildlings · catch only</h3>
       <div class="roster rares" id="rares"></div>
+      <h3>Wild ones to watch for</h3>
+      <div class="traits" id="traitList"></div>
     </div>
     <div class="hgrid">
       <div class="card">
@@ -500,8 +506,9 @@ body.in-lobby .main, body.in-lobby .stats, body.in-lobby header .diffrow{display
           <li><b>Campaign</b>: clear 12 trails, each with its own map (the last four branch into several routes, and wild ones take turns choosing one), for up to 3 stars each. Spend stars on permanent upgrades. <b>Endless</b> tracks your best wave.</li>
           <li>Open <b>Trails &amp; upgrades</b> to visit the <b>Cosmetics</b>: skins and accessories for each wildling, map themes and orb styles, bought with gems you earn by playing.</li>
           <li><b>Saving:</b> your run saves after every cleared wave. Use <b>Save &amp; quit</b> between waves, then pick it up again from <b>Saved runs</b> in Trails &amp; upgrades.</li>
+          <li>From wave 3 on, some wild ones arrive as <b>special kinds</b> (Swift, Armored, Mender, Splitter, Burrower, Warden and Phantom), each needing a different plan. The home page lists them all.</li>
           <li>Every 5th wave brings an alpha. Letting one through costs 5 Grove.</li>
-          <li>Every 5th wave also brings one of three glowing <b>rare wildlings</b>: Lumi, Gloom or Rime. They won't hurt the Grove, but they escape if they reach the end. Rares can't be bought, only caught, and releasing one returns it to your party.</li>
+          <li>Every 5th wave has a 60% chance of a glowing <b>rare wildling</b>: Lumi (most common), Gloom or Rime. Miss two in a row and the next 5th wave is guaranteed one. They won't hurt the Grove, but they escape if they reach the end. Rares can't be bought, only caught, and releasing one returns it to your party.</li>
           <li>Each stationed wildling has its own <b>targeting</b>: First, Last, Strong, Weak or Close. Set it in the panel above.</li>
           <li>Keys: <kbd>M</kbd> mute, <kbd>1</kbd>–<kbd>9</kbd> pick, <kbd>Space</kbd> start wave, <kbd>C</kbd> orb, <kbd>T</kbd> cycle targeting, <kbd>Esc</kbd> cancel.</li>
         </ul>
@@ -1296,14 +1303,28 @@ const trainLabel = t => canEvolve(t) ? `Evolve · ${evoCost(t)}` : t.lvl>=MAXLV 
 const refund = t => Math.floor(t.invested*.6);
 
 function waveTheme(n){ return ORDER[(n-1)%6]; }
+const TRAITS = {
+  swift:{name:'Swift', from:3, hp:.6, spd:1.45, col:'#8fe3ff', desc:'Fast and fragile, with sudden dashes. Catch them with long reach and slows.'},
+  armored:{name:'Armored', from:4, hp:1, spd:.9, col:'#c9ced6', desc:'A shell blocks part of every hit. Big hits, poison and burns get through.'},
+  mender:{name:'Mender', from:6, hp:.9, spd:1, col:'#7be06a', desc:'Heals nearby wild ones every few seconds. Knock it out first.'},
+  splitter:{name:'Splitter', from:7, hp:1, spd:1, col:'#ffb36b', desc:'Splits into two quick halves when knocked out. Splash handles the pieces.'},
+  burrower:{name:'Burrower', from:9, hp:1, spd:1, col:'#b08a5a', desc:'Dives underground where nothing can hit it, then pops back up.'},
+  warden:{name:'Warden', from:11, hp:1.1, spd:.9, col:'#6fc3ff', desc:'Shields the wild ones around it. Shields soak up damage before health.'},
+  phantom:{name:'Phantom', from:13, hp:.8, spd:1.1, col:'#d9c8ff', desc:'Flickers in and out, dodging a third of incoming shots. Splash and lightning never miss.'},
+};
+function traitFor(n, rnd){
+  const avail=Object.keys(TRAITS).filter(k=>TRAITS[k].from<=n);
+  return (avail.length && rnd()<Math.min(.45, .1+.02*n)) ? avail[(rnd()*avail.length)|0] : null;
+}
 const isAlpha = n => n%5===0 || (S.mode==='campaign' && n===LEVELS[S.level].waves);
 function buildWave(n){
   const q=[], count=Math.min(6+Math.floor(n*1.7), 60), theme=waveTheme(n);
   const rnd = S.mode==='duel' ? rng(duelSeed*977+n) : Math.random;
   const hpMul=(1+.3*(n-1))*(1+.015*(n-1)*(n-1))*DIFF[S.diff].hp*(S.mode==='campaign'?LEVELS[S.level].tough:1), gap=Math.max(.32,.85-n*.02);
-  for (let i=0;i<count;i++){ const sp = rnd()<.6 ? theme : ORDER[(rnd()*6)|0]; q.push({sp, hp:SP[sp].hp*hpMul, boss:false, gap}); }
+  for (let i=0;i<count;i++){ const sp = rnd()<.6 ? theme : ORDER[(rnd()*6)|0]; q.push({sp, hp:SP[sp].hp*hpMul, boss:false, gap, trait:traitFor(n, rnd)}); }
   if (isAlpha(n)) q.push({sp:theme, hp:SP[theme].hp*hpMul*10, boss:true, gap:1.4});
-  if (n%5===0){ const rk=RARES[(rnd()*RARES.length)|0]; q.splice(Math.floor(q.length/2), 0, {sp:rk, hp:SP[rk].hp*hpMul*3, boss:false, rare:true, gap}); }
+  if (n%5===0 && (S.rareMiss>=2 || rnd()<.6)){ S.rareMiss=0; const roll=rnd(), rk = roll<.45 ? 'lumi' : roll<.75 ? 'gloom' : 'rime'; q.splice(Math.floor(q.length/2), 0, {sp:rk, hp:SP[rk].hp*hpMul*3, boss:false, rare:true, gap}); }
+  else if (n%5===0) S.rareMiss=(S.rareMiss||0)+1;
   return q;
 }
 function startWave(){
@@ -1319,6 +1340,11 @@ function spawn(q){
   const e={ id:++uid, sp:q.sp, type:s.type, hp:q.hp, max:q.hp, spd:s.spd*(q.boss?.7:1)*D.spd, dist:0, boss:q.boss, rare:!!q.rare, r:q.boss?22:q.rare?15:13,
     reward:Math.max(1, Math.round((q.boss?40+5*S.wave:q.rare?30+2*S.wave:3+Math.floor(S.wave/4))*D.reward)), xpv:(4+S.wave*.5)*(q.boss?6:1),
     slowT:0, slowF:1, poisonT:0, poisonDps:0, poisonSrc:null, stunT:0, hitT:0, seed:Math.random()*10, face:1 };
+  if (q.trait && TRAITS[q.trait]){
+    const tr=TRAITS[q.trait]; e.trait=q.trait; e.hp*=tr.hp; e.max=e.hp; e.spd*=tr.spd; e.reward+=1;
+    e.healT=1.5; e.burT=2+Math.random()*2; e.wardT=.8; e.dashT=1+Math.random()*2; e.shield=0;
+    S.seen=S.seen||{}; if (!S.seen[q.trait]){ S.seen[q.trait]=1; toast(`New wild one: ${tr.name}. ${tr.desc.split('.')[0]}.`); }
+  }
   e.route = routeTurn++ % ROUTES.length; e.frost=0; [e.x,e.y]=posAt(0, e.route); enemies.push(e);
   if (e.rare) toast(`A rare ${SP[e.sp].names[0]} appeared! Throw an orb to catch it.`);
 }
@@ -1326,12 +1352,16 @@ function spawn(q){
 /* ---------- combat ---------- */
 function pop(x,y,text,color,size=10){ pops.push({x,y,text,color,size,t:0}); }
 function damage(t,e,amt,show,P=params(t)){
-  if (e.dead) return;
+  if (e.dead || e.under) return;
+  if (e.trait==='phantom' && show && Math.random()<.33){ pop(e.x, e.y-e.r-12, 'miss', '#d9c8ff', 9); return; }
   let m = P.super ? 2 : (CHART[SP[t.sp].type][e.type] ?? 1);
   if (e.vulnT>0) m *= 1+(e.vulnF||0);
   if (P.shatter && e.frozenT>0) amt*=P.shatter;
   let crit=false; if (P.critC && Math.random()<P.critC){ amt*=P.critM; crit=true; }
-  e.hp -= amt*m; e.hitT = .12;
+  let dmgv = amt*m;
+  if (e.trait==='armored'){ const ar=3+S.wave*.45; dmgv=Math.max(dmgv*.2, dmgv-ar); }
+  if (e.shield>0){ const ab=Math.min(e.shield, dmgv); e.shield-=ab; dmgv-=ab; }
+  e.hp -= dmgv; e.hitT = .12;
   if (show && crit) pop(e.x, e.y-e.r-12, 'crit!', '#ff9a3c', 10);
   else if (show && m>1.5 && Math.random()<.5) pop(e.x, e.y-e.r-12, 'super!', '#ffe27a', 9);
   if (e.hp<=0) kill(e,t);
@@ -1352,11 +1382,62 @@ function addZone(o){
   zones.push({x:o.x, y:o.y, r:T*.62, t:0, max:3});
   if (zones.length>10) zones.shift();
 }
+function traitTick(e, dt){
+  switch (e.trait){
+    case 'mender':
+      if ((e.healT-=dt)<=0){ e.healT=2.5; let any=false;
+        for (const o of enemies) if (!o.dead && o!==e && o.hp<o.max && Math.hypot(o.x-e.x,o.y-e.y)<1.4*T){ o.hp=Math.min(o.max, o.hp+o.max*.08); any=true; }
+        if (any) fx.push({k:'ring', x:e.x, y:e.y, r:1.4*T, t:0, max:.45, color:'#7be06a'}); }
+      break;
+    case 'burrower':
+      if (e.under){ if ((e.underT-=dt)<=0){ e.under=false; e.burT=3+Math.random()*1.5; fx.push({k:'puff', x:e.x, y:e.y, t:0, max:.35, color:'#9a7a4a'}); } }
+      else if ((e.burT-=dt)<=0 && e.stunT<=0){ e.under=true; e.underT=1.6; fx.push({k:'puff', x:e.x, y:e.y, t:0, max:.35, color:'#9a7a4a'}); }
+      break;
+    case 'warden':
+      if ((e.wardT-=dt)<=0){ e.wardT=5;
+        for (const o of enemies) if (!o.dead && o!==e && Math.hypot(o.x-e.x,o.y-e.y)<1.5*T) o.shield=Math.max(o.shield||0, o.max*.2);
+        fx.push({k:'ring', x:e.x, y:e.y, r:1.5*T, t:0, max:.45, color:'#6fc3ff'}); }
+      break;
+    case 'swift':
+      if ((e.dashT-=dt)<=0) e.dashT=3;
+      break;
+  }
+}
+function drawTrait(e){
+  const r=e.r, x=e.x, y=e.y;
+  ctx.save(); ctx.lineWidth=1.5; ctx.strokeStyle='#1b1712';
+  switch (e.trait){
+    case 'armored':
+      ctx.fillStyle='#c9ced6'; ctx.beginPath(); ctx.arc(x, y, r*1.04, Math.PI+.35, TAU-.35); ctx.lineTo(x+r*.85, y-r*.38); ctx.quadraticCurveTo(x, y-r*.62, x-r*.85, y-r*.38); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle='#7d8590'; for (const k of [-.5,0,.5]){ ctx.beginPath(); ctx.arc(x+k*r, y-r*.66+Math.abs(k)*r*.12, r*.08, 0, TAU); ctx.fill(); }
+      break;
+    case 'mender': {
+      const s=r*.32*(1+.12*Math.sin(time*5)), cx=x+r*.95, cy=y-r*.95;
+      ctx.fillStyle='#7be06a'; ctx.fillRect(cx-s*.35, cy-s, s*.7, s*2); ctx.fillRect(cx-s, cy-s*.35, s*2, s*.7); ctx.strokeRect(cx-s*.35, cy-s, s*.7, s*2);
+      break; }
+    case 'splitter':
+      ctx.strokeStyle='#ffb36b'; ctx.lineWidth=2; ctx.setLineDash([3,3]); ctx.beginPath(); ctx.moveTo(x, y-r); ctx.lineTo(x, y+r); ctx.stroke();
+      break;
+    case 'warden':
+      ctx.strokeStyle='rgba(111,195,255,.85)'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(x, y, r*1.25+Math.sin(time*4)*1.5, 0, TAU); ctx.stroke();
+      ctx.fillStyle='#6fc3ff'; ctx.beginPath(); ctx.moveTo(x, y-r*1.45); ctx.lineTo(x+r*.25, y-r*1.15); ctx.lineTo(x, y-r*.85); ctx.lineTo(x-r*.25, y-r*1.15); ctx.closePath(); ctx.fill(); ctx.stroke();
+      break;
+    case 'swift':
+      ctx.strokeStyle = e.dashT<.6 ? 'rgba(143,227,255,.95)' : 'rgba(143,227,255,.5)'; ctx.lineWidth=2;
+      for (const k of [-.4,0,.4]){ const bx=x-e.face*r*1.2; ctx.beginPath(); ctx.moveTo(bx, y+k*r); ctx.lineTo(bx-e.face*r*(e.dashT<.6?.9:.5), y+k*r); ctx.stroke(); }
+      break;
+  }
+  ctx.restore();
+}
 function kill(e,t){
   if (e.dead) return; e.dead = true; sfx('ko');
   if (e.doomT>0){
     const R=1.25*T, dmg=e.max*e.doomP; fx.push({k:'ring', x:e.x, y:e.y, r:R, t:0, max:.4, color:'#c86bff'}); fx.push({k:'puff', x:e.x, y:e.y, t:0, max:.45, color:'#7a3ab8'});
     for (const o of enemies) if (o!==e && !o.dead && Math.hypot(o.x-e.x,o.y-e.y)<R) damage(e.doomSrc, o, dmg, false);
+  }
+  if (e.trait==='splitter' && !e.child){
+    for (const k of [-1,1]){ spawn({sp:e.sp, hp:Math.max(1, e.max*.35), boss:false}); const c=enemies[enemies.length-1]; c.route=e.route||0; c.dist=Math.max(0, e.dist+k*10); [c.x,c.y]=posAt(c.dist, c.route); c.r=10; c.child=true; c.spd*=1.3; c.reward=1; c.xpv=Math.max(1,e.xpv*.3); }
+    fx.push({k:'ring', x:e.x, y:e.y, r:T*.6, t:0, max:.3, color:'#ffb36b'});
   }
   if (t && t.sp==='gloom' && S.towers.includes(t) && params(t).haunt) shades.push({route:e.route||0, dist:e.dist, x:e.x, y:e.y, ttl:5, dmg:stats(t).dmg*1.5, src:t, hit:new Set(), seed:Math.random()*10});
   const r = e.reward + (t && t.sp ? params(t).bounty : 0);
@@ -1398,7 +1479,7 @@ function fire(t,e,st){
     damage(t,e,d,true,P); afflict(t,e,P,d,true); if (P.stunAll) stunFor(e,P.stunAll);
     for (let i=0;i<P.chain;i++){
       d*=Math.min(.95,P.chainFall); let bestE=null, bd=1.8*T;
-      for (const o of enemies){ if (o.dead||hit.includes(o)) continue; const dd=Math.hypot(o.x-cur.x,o.y-cur.y); if (dd<bd){ bd=dd; bestE=o; } }
+      for (const o of enemies){ if (o.dead||o.under||hit.includes(o)) continue; const dd=Math.hypot(o.x-cur.x,o.y-cur.y); if (dd<bd){ bd=dd; bestE=o; } }
       if (!bestE) break; hit.push(bestE); damage(t,bestE,d,false,P); afflict(t,bestE,P,d,false); if (P.stunAll) stunFor(bestE,P.stunAll);
       pts.push([bestE.x,bestE.y]); cur=bestE;
     }
@@ -1445,8 +1526,9 @@ function update(dt){
     if (e.frostT>0){ e.frostT-=dt; if (e.frostT<=0) e.frost=0; }
     if (e.doomT>0) e.doomT-=dt;
     if (e.fearCD>0) e.fearCD-=dt;
+    if (e.trait) traitTick(e, dt);
     if (e.stunT>0){ e.stunT-=dt; continue; }
-    const step = e.spd*(e.slowT>0?e.slowF:1)*(1-Math.min(.3,(e.frost||0)*.06))*T*dt;
+    const step = e.spd*(e.slowT>0?e.slowF:1)*(1-Math.min(.3,(e.frost||0)*.06))*(e.under?1.3:1)*(e.trait==='swift' && e.dashT<.6 ? 1.9 : 1)*T*dt;
     if (e.fearT>0){ e.fearT-=dt; e.dist=Math.max(0, e.dist-step*.75); } else e.dist += step;
     const px=e.x; [e.x,e.y]=posAt(e.dist, e.route); if (Math.abs(e.x-px)>.01) e.face = e.x<px?-1:1;
     if (e.dist>=ROUTES[e.route].total){ e.dead=true; if (e.rare){ toast(`The rare ${SP[e.sp].names[0]} slipped away`); continue; } S.lives-=e.boss?5:1; sfx('leak'); pop(W-30, e.y-20, e.boss?'-5 Grove':'-1 Grove', '#ff6680', 11); fx.push({k:'flash', t:0, max:.3}); }
@@ -1461,9 +1543,9 @@ function update(dt){
   for (const t of S.towers){
     t.cd-=dt; if (t.cd>0) continue;
     const st=stats(t), mode=t.target||'first'; let tgt=null, td=0;
-    for (const e of enemies){ if (e.dead) continue; const d=Math.hypot(e.x-t.x,e.y-t.y); if (d>st.range) continue; if (!tgt || better(mode,e,d,tgt,td)){ tgt=e; td=d; } }
+    for (const e of enemies){ if (e.dead || e.under) continue; const d=Math.hypot(e.x-t.x,e.y-t.y); if (d>st.range) continue; if (!tgt || better(mode,e,d,tgt,td)){ tgt=e; td=d; } }
     if (tgt){ t.face = tgt.x<t.x?-1:1; fire(t,tgt,st);
-      if (st.P.multi){ const rest=enemies.filter(o=>!o.dead && o!==tgt && Math.hypot(o.x-t.x,o.y-t.y)<=st.range).map(o=>({o,d:Math.hypot(o.x-t.x,o.y-t.y)})); rest.sort((A,B)=>better(mode,A.o,A.d,B.o,B.d)?-1:better(mode,B.o,B.d,A.o,A.d)?1:0); rest.slice(0,st.P.multi).forEach(({o})=>fire(t,o,st)); }
+      if (st.P.multi){ const rest=enemies.filter(o=>!o.dead && !o.under && o!==tgt && Math.hypot(o.x-t.x,o.y-t.y)<=st.range).map(o=>({o,d:Math.hypot(o.x-t.x,o.y-t.y)})); rest.sort((A,B)=>better(mode,A.o,A.d,B.o,B.d)?-1:better(mode,B.o,B.d,A.o,A.d)?1:0); rest.slice(0,st.P.multi).forEach(({o})=>fire(t,o,st)); }
       t.cd=st.rate; t.kick=.12; }
   }
   for (const t of S.towers){ if (t.kick>0) t.kick-=dt; if (t.evoT>0) t.evoT-=dt; }
@@ -1531,10 +1613,15 @@ function render(){
     if (canEvolve(t)){ const by=t.y-30-Math.abs(Math.sin(time*4))*4; ctx.fillStyle='#8fe3ff'; ctx.strokeStyle='rgba(10,20,14,.9)'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(t.x,by-7); ctx.lineTo(t.x+7,by+2); ctx.lineTo(t.x+3,by+2); ctx.lineTo(t.x+3,by+7); ctx.lineTo(t.x-3,by+7); ctx.lineTo(t.x-3,by+2); ctx.lineTo(t.x-7,by+2); ctx.closePath(); ctx.stroke(); ctx.fill(); }
   }
   for (const e of enemies){
+    if (e.under){ ctx.fillStyle='rgba(0,0,0,.25)'; ell(ctx,e.x,e.y+6,16,6); ctx.fill(); ctx.fillStyle='#7a5a34'; ctx.beginPath(); ctx.ellipse(e.x,e.y+4,14,8,0,Math.PI,0); ctx.fill(); ctx.fillStyle='#a07a4a'; for (let i=0;i<4;i++){ ctx.beginPath(); ctx.arc(e.x-9+i*6, e.y-((time*12+i*5)%6), 1.8, 0, TAU); ctx.fill(); } continue; }
     if (e.vulnT>0){ ctx.strokeStyle='rgba(255,102,128,.85)'; ctx.lineWidth=1.5; ctx.setLineDash([3,3]); ctx.beginPath(); ctx.arc(e.x,e.y,e.r+4,0,TAU); ctx.stroke(); ctx.setLineDash([]); }
     if (e.slowT>0){ ctx.strokeStyle='rgba(143,227,255,.8)'; ctx.lineWidth=2; ell(ctx,e.x,e.y+e.r*.9,e.r*.95,e.r*.32); ctx.stroke(); }
     if (e.rare){ const g=.22+.1*Math.sin(time*6); ctx.fillStyle=`rgba(255,226,120,${g})`; ctx.beginPath(); ctx.arc(e.x,e.y,e.r*1.9,0,TAU); ctx.fill(); ctx.fillStyle='#fffbe0'; for (let i=0;i<4;i++){ const a=time*2+i*TAU/4, sx=e.x+Math.cos(a)*e.r*1.6, sy=e.y+Math.sin(a)*e.r*1.3, z=2+1.5*Math.abs(Math.sin(time*5+i)); ctx.beginPath(); ctx.moveTo(sx,sy-z*2); ctx.lineTo(sx+z*.6,sy); ctx.lineTo(sx,sy+z*2); ctx.lineTo(sx-z*.6,sy); ctx.closePath(); ctx.fill(); } }
+    if (e.trait==='phantom'){ ctx.save(); ctx.globalAlpha=.45+.25*Math.sin(time*7+e.seed); }
     drawCritter(ctx, e.sp, e.x, e.y, e.r, e.boss?2:0, time*(e.stunT>0?0:1.3), {flip:e.face<0, wild:true, seed:e.seed});
+    if (e.trait==='phantom') ctx.restore();
+    if (e.trait) drawTrait(e);
+    if (e.shield>0){ ctx.save(); ctx.fillStyle='rgba(111,195,255,.18)'; ctx.strokeStyle='rgba(160,220,255,.8)'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(e.x,e.y,e.r*1.35,0,TAU); ctx.fill(); ctx.stroke(); ctx.restore(); }
     if (e.frozenT>0){ ctx.fillStyle='rgba(170,225,255,.55)'; ctx.beginPath(); ctx.arc(e.x,e.y,e.r*1.05,0,TAU); ctx.fill(); ctx.strokeStyle='rgba(255,255,255,.9)'; ctx.lineWidth=1.5; ctx.stroke(); }
     if (e.hitT>0){ ctx.fillStyle='rgba(255,255,255,.35)'; ctx.beginPath(); ctx.arc(e.x,e.y,e.r,0,TAU); ctx.fill(); }
     if (e.poisonT>0){ ctx.fillStyle='rgba(176,92,214,.85)'; for (let i=0;i<3;i++){ const a=time*3+i*2.1; ctx.beginPath(); ctx.arc(e.x+Math.cos(a)*e.r*.7, e.y-e.r*.2-((time*20+i*7)%12), 2, 0, TAU); ctx.fill(); } }
@@ -1599,7 +1686,7 @@ function drawOrb(x,y,r,rot,id,c=ctx){
 /* ---------- input ---------- */
 function canPlace(c,r){ return c>=0 && c<COLS && r>=0 && r<ROWS && !pathCells.has(c+','+r) && !S.towers.some(t=>t.c===c&&t.r===r); }
 function toBoard(ev){ const b=cv.getBoundingClientRect(); const x=(ev.clientX-b.left)*W/b.width, y=(ev.clientY-b.top)*H/b.height; return {x, y, c:Math.floor(x/T), r:Math.floor(y/T)}; }
-function enemyAt(x,y){ let bestE=null, bd=1e9; for (const e of enemies){ const d=Math.hypot(e.x-x,e.y-y); if (d<e.r+16 && d<bd){ bd=d; bestE=e; } } return bestE; }
+function enemyAt(x,y){ let bestE=null, bd=1e9; for (const e of enemies){ if (e.under) continue; const d=Math.hypot(e.x-x,e.y-y); if (d<e.r+16 && d<bd){ bd=d; bestE=e; } } return bestE; }
 const catchChance = e => Math.min(.95, Math.min(.9, Math.max(.08, (1-e.hp/e.max)*.9+.06)) * (e.boss?.3:e.rare?.6:1) + .08*upg('orbs')*(e.boss?.3:1));
 
 cv.addEventListener('pointermove', ev => { hover = toBoard(ev); });
@@ -1695,6 +1782,7 @@ function renderHome(){
   $('rares').innerHTML = RARES.map(rcard).join('');
   document.querySelectorAll('#roster canvas, #rares canvas').forEach(cn => drawPortrait(cn, cn.dataset.k, 0, false));
   $('chart2').innerHTML = $('chart').innerHTML;
+  $('traitList').innerHTML = Object.values(TRAITS).map(t => `<div class="trow"><span class="tdot" style="background:${t.col}"></span><b>${t.name}</b><span class="meta">wave ${t.from}+</span><span class="ud">${t.desc}</span></div>`).join('');
 }
 function renderHero(dt){
   heroT += dt;
@@ -2076,7 +2164,7 @@ function syncHUD(){
   $('modeLbl').textContent = duel ? `1v1 Duel · vs ${rivalName()}` : camp ? `Trail ${S.level+1} of ${LEVELS.length} · ${L.name}` : 'Endless · Meadow Trail';
   const sb=$('startBtn'); sb.disabled = S.phase!=='build'; sb.textContent = S.phase==='wave' ? `Wave ${S.wave} in progress` : `Start wave ${S.wave+1}`;
   const n=S.wave+(S.phase==='wave'?0:1), th=SP[waveTheme(n)];
-  $('nextInfo').innerHTML = S.phase==='wave' ? `<b>${enemies.length+spawnQ.length}</b> wild ones left on the trail` : `Next: mostly <b>${th.names[0]}</b> (${th.type})${isAlpha(n)?' with an <b>alpha</b>':''}${n%5===0?' and a <b>rare wildling</b>':''}${camp?` · ${L.waves-S.wave} waves to go`:''}`;
+  $('nextInfo').innerHTML = S.phase==='wave' ? `<b>${enemies.length+spawnQ.length}</b> wild ones left on the trail` : `Next: mostly <b>${th.names[0]}</b> (${th.type})${isAlpha(n)?' with an <b>alpha</b>':''}${n%5===0?' · a <b>rare wildling</b> may appear':''}${(()=>{ const nt=Object.values(TRAITS).find(v=>v.from===n); return nt ? ` · new: <b>${nt.name}</b> wild ones` : ''; })()}${camp?` · ${L.waves-S.wave} waves to go`:''}`;
   $('orbBtn').disabled = S.phase==='over';
   { const sb2=$('saveBtn'), can=S.phase==='build' && (S.wave>0 || S.towers.length); sb2.hidden = S.mode==='duel' || S.phase==='over' || S.phase==='won'; const lbl = S.phase==='wave' ? 'Save after this wave' : 'Save & quit'; if (sb2.textContent!==lbl) sb2.textContent=lbl; sb2.disabled=!can; }
   syncParty(); renderTowerPanel(false);
