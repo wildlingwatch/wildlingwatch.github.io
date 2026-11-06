@@ -87,7 +87,9 @@ aside{display:grid;gap:12px;min-width:0;align-content:start}
 #towerPanel.wide .tp-ability,#towerPanel.wide .learned{font-size:12px;line-height:1.4}
 #towerPanel.wide .btn{padding:6px 10px;font-size:13px}
 #towerPanel.wide .seg button{padding:5px 6px;font-size:12px}
-#towerPanel.wide p.empty{margin:0}
+#towerPanel.wide p.empty{margin:0;align-self:center;text-align:center;padding:8px 0}
+html{scrollbar-gutter:stable}
+@media (min-width:921px){ #towerCard{min-height:156px;display:grid;grid-template-rows:auto 1fr} #towerPanel.wide{align-content:start} #towerPanel.wide:has(> p.empty){align-content:center} }
 body.in-game .controls{margin-top:8px}
 #towerPanel.wide .tp-name{font-size:15px}
 #towerPanel.wide .kv{gap:3px 12px}
@@ -97,7 +99,7 @@ body.in-game header > div:first-child{display:flex;flex-wrap:wrap;align-items:ce
 body.in-game header .diffrow{margin-top:0}
 body.in-game .wrap{padding-block:10px 24px}
 @media (min-width:921px){
-  body.in-game .main > section{justify-self:center;width:min(100%, max(420px, calc((100vh - 412px) * 1.6)))}
+  body.in-game .main > section{justify-self:center;width:min(100%, max(380px, calc((100vh - 436px) * 1.6)))}
 }
 #towerPanel.wide{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px 20px;align-items:start}
 #towerPanel.wide > p.empty{grid-column:1/-1}
