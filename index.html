@@ -118,9 +118,11 @@ body.in-game .tag{display:none}
 body.in-game h1{font-size:24px}
 body.in-game header > div:first-child{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px}
 body.in-game header .diffrow{margin-top:0}
+body.in-game #diffNote, body.in-game header .diffrow > .lbl:not(#modeLbl){display:none}
+body.in-game h1{font-size:22px}
 body.in-game .wrap{padding-block:10px 24px}
 @media (min-width:921px){
-  body.in-game .main > section{justify-self:center;width:min(100%, max(400px, calc((100vh - 408px) * 1.6)))}
+  body.in-game .main > section{justify-self:center;width:min(100%, max(400px, calc((100vh - 372px) * 1.6)))}
 }
 #towerPanel.wide{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px 20px;align-items:start}
 #towerPanel.wide > p.empty{grid-column:1/-1}
