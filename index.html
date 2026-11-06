@@ -1370,6 +1370,11 @@ function drawCritter(c,k,x,y,r,stage,time,o={}){
   // body
   c.fillStyle = s.body; c.beginPath();
   if (k==='pebble'){ const n=10; for (let i=0;i<n;i++){ const a=i/n*TAU, rr=r*(.9+((i*37)%5)/40); const px=Math.cos(a)*rr*1.08, py=Math.sin(a)*rr*.95; i?c.lineTo(px,py):c.moveTo(px,py); } c.closePath(); }
+  else if (k==='volt') c.ellipse(0,r*.04,r*1.12,r*.9,0,0,TAU);
+  else if (k==='sprout'){ c.moveTo(0,-r*1.1); c.bezierCurveTo(r*.72,-r*.98,r*1.02,-r*.12,r*.98,r*.25); c.bezierCurveTo(r*.92,r*.86,r*.42,r*1.0,0,r*1.0); c.bezierCurveTo(-r*.42,r*1.0,-r*.92,r*.86,-r*.98,r*.25); c.bezierCurveTo(-r*1.02,-r*.12,-r*.72,-r*.98,0,-r*1.1); c.closePath(); }
+  else if (k==='gloom'){ c.arc(0,-r*.05,r*.98,Math.PI,0); c.lineTo(r*.98,r*.62); for (let i=0;i<4;i++){ const x0=r*(.98-i*.49), x1=r*(.98-(i+1)*.49); c.quadraticCurveTo((x0+x1)/2, r*(i%2?.82:1.08), x1, r*.78); } c.closePath(); }
+  else if (k==='tide') c.ellipse(0,r*.05,r*1.06,r*.95,0,0,TAU);
+  else if (k==='gust') c.ellipse(0,-r*.02,r*.94,r*1.04,0,0,TAU);
   else c.arc(0,0,r,0,TAU);
   c.fill(); c.stroke();
   { const fxk = o.skin && (SKIN_FX[k]||{})[o.skin]; if (fxk) drawSkinFx(c, fxk, s, r, time, anim); drawShine(c, r); }
@@ -1392,6 +1397,14 @@ function drawCritter(c,k,x,y,r,stage,time,o={}){
   c.strokeStyle='#16130f'; c.lineWidth=Math.max(1,r*.07); c.beginPath();
   if (o.wild){ c.moveTo(r*.15,r*.22); c.lineTo(r*.42,r*.2); } else c.arc(r*.28,r*.14,r*.12,.2,Math.PI-.2);
   c.stroke();
+  // species face details so each one reads at a glance, whatever skin it wears
+  c.save(); c.lineCap='round'; c.lineWidth=Math.max(1,r*.05);
+  if (k==='ember'){ c.fillStyle='#ff7a9a'; c.beginPath(); c.moveTo(r*.2,r*.02); c.lineTo(r*.34,r*.02); c.lineTo(r*.27,r*.1); c.closePath(); c.fill(); c.strokeStyle=s.dark; for (const dy of [-.02,.08]){ c.beginPath(); c.moveTo(r*.72,r*(.06+dy)); c.lineTo(r*1.08,r*(.0+dy*2)); c.stroke(); c.beginPath(); c.moveTo(-r*.12,r*(.06+dy)); c.lineTo(-r*.46,r*(.0+dy*2)); c.stroke(); } }
+  if (k==='gust'){ c.fillStyle='#ffb43c'; c.strokeStyle='#8a4a10'; c.beginPath(); c.moveTo(r*.66,-r*.02); c.lineTo(r*1.08,r*.08); c.lineTo(r*.66,r*.2); c.closePath(); c.fill(); c.stroke(); }
+  if (k==='volt'){ c.strokeStyle=s.dark; c.lineWidth=Math.max(1.2,r*.08); for (const sx of [-1,1]){ c.beginPath(); c.moveTo(r*.62,r*(.4+sx*.02)); c.quadraticCurveTo(r*.98,r*(.38+sx*.14),r*.86,r*(.5+sx*.18)); c.stroke(); } }
+  if (k==='tide'){ c.fillStyle=s.dark; c.beginPath(); c.ellipse(r*.3,r*.02,r*.1,r*.07,0,0,TAU); c.fill(); c.fillStyle='rgba(255,255,255,.6)'; c.beginPath(); c.arc(r*.27,r*.0,r*.03,0,TAU); c.fill(); }
+  if (k==='sprout'){ c.fillStyle='rgba(120,70,30,.45)'; for (const [x,y] of [[-.12,.12],[-.04,.18],[.66,.14],[.74,.2]]){ c.beginPath(); c.arc(r*x,r*y,r*.035,0,TAU); c.fill(); } }
+  c.restore();
   if (leg){
     const tw=anim?time:.3;
     c.save(); c.strokeStyle='#ffd84a'; c.lineWidth=r*.055; c.lineCap='round';
@@ -1776,7 +1789,7 @@ function render(){
   for (const z of zones){ const a=1-z.t/z.max; ctx.fillStyle=`rgba(200,240,255,${.45*a})`; ctx.strokeStyle=`rgba(255,255,255,${.7*a})`; ctx.lineWidth=1.5; ctx.beginPath(); for (let i=0;i<10;i++){ const an=i/10*TAU, rr=z.r*(i%2?.82:1); ctx.lineTo(z.x+Math.cos(an)*rr, z.y+Math.sin(an)*rr*.7); } ctx.closePath(); ctx.fill(); ctx.stroke(); }
   for (const t of S.towers){
     ctx.fillStyle='rgba(20,40,22,.35)'; ell(ctx,t.x,t.y+13,19,7); ctx.fill();
-    ctx.strokeStyle=t===selected?'#ffc94a':'rgba(255,255,255,.25)'; ctx.lineWidth=2; ell(ctx,t.x,t.y+13,19,7); ctx.stroke();
+    { const tc=TYPES[SP[t.sp].type]; ctx.save(); ctx.globalAlpha=.28; ctx.fillStyle=tc; ell(ctx,t.x,t.y+13,19,7); ctx.fill(); ctx.restore(); ctx.strokeStyle=t===selected?'#ffc94a':tc; ctx.lineWidth=t===selected?2.5:2; ell(ctx,t.x,t.y+13,19,7); ctx.stroke(); }
     const k = t.kick>0 ? -3 : 0;
     const ds = t.evoT>0 && t.stage>0 && Math.floor(t.evoT*12)%2 ? t.stage-1 : t.stage;
     drawCritter(ctx, t.sp, t.x, t.y-2+k, 13+ds*2.8, ds, time, {flip:t.face<0, seed:t.id, noShadow:true, ...cos(t.sp)});
