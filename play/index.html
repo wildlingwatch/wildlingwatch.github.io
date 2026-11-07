@@ -905,14 +905,14 @@ let endlessMap='meadow'; try { endlessMap = localStorage.getItem('wildling-endle
 if (!LEVELS.some(L=>L.id===endlessMap)) endlessMap='meadow';
 const endlessLevel = () => Math.max(0, LEVELS.findIndex(L=>L.id===endlessMap));
 const UPG = [
-  {id:'berries', name:'Deep Pockets', desc:'+25 starting berries per rank', cost:[1,2,3]},
-  {id:'grove', name:'Thick Roots', desc:'+3 Grove health per rank', cost:[1,2,3]},
-  {id:'power', name:'Sharp Training', desc:'+6% damage for every wildling per rank', cost:[2,3,4]},
-  {id:'bargain', name:'Bargain Hunter', desc:'Training and evolving cost 8% less per rank', cost:[1,2,3]},
-  {id:'forage', name:'Forager', desc:'+15% berries for clearing a wave per rank', cost:[1,2]},
-  {id:'orbs', name:'Lucky Orbs', desc:'+8% catch chance per rank', cost:[2,3]},
-  {id:'reach', name:'Keen Eyes', desc:'+0.15 tiles of reach for every wildling per rank', cost:[2,3]},
-  {id:'head', name:'Head Start', desc:'New wildlings start 1 level higher per rank', cost:[2,4]},
+  {id:'berries', name:'Deep Pockets', desc:'+25 starting berries per rank', cost:[2,4,6]},
+  {id:'grove', name:'Thick Roots', desc:'+3 Grove health per rank', cost:[2,4,6]},
+  {id:'power', name:'Sharp Training', desc:'+6% damage for every wildling per rank', cost:[4,7,10]},
+  {id:'bargain', name:'Bargain Hunter', desc:'Training and evolving cost 8% less per rank', cost:[2,4,7]},
+  {id:'forage', name:'Forager', desc:'+15% berries for clearing a wave per rank', cost:[3,6]},
+  {id:'orbs', name:'Lucky Orbs', desc:'+8% catch chance per rank', cost:[3,6]},
+  {id:'reach', name:'Keen Eyes', desc:'+0.15 tiles of reach for every wildling per rank', cost:[4,8]},
+  {id:'head', name:'Head Start', desc:'New wildlings start 1 level higher per rank', cost:[5,9]},
 ];
 let profile = {stars:{}, up:{}, gems:50, owned:{}, saves:{}, v:2, trials:{}, offers:{}, pass:{xp:0, claimed:[], claimedP:[], premium:false, track:3}, equip:{skin:{}, hat:{}, map:'meadow', orb:'seed'}};
 try { const pr = JSON.parse(localStorage.getItem('wildling-profile')); if (pr && typeof pr==='object') profile = {stars:pr.stars||{}, up:pr.up||{}, gems: typeof pr.gems==='number' ? pr.gems : 50, owned:pr.owned||{}, saves:(pr.saves && typeof pr.saves==='object') ? pr.saves : {}, v:pr.v||0, trials:pr.trials||{}, offers:pr.offers||{}, pass:{xp:0, claimed:[], ...(pr.pass||{})}, equip:{skin:{}, hat:{}, map:'meadow', orb:'seed', ...(pr.equip||{})}}; } catch(e) {}
@@ -2364,7 +2364,14 @@ function startRun(m, li=0){
   toast(m==='campaign' ? `Trail ${li+1}: ${LEVELS[li].name}. Survive ${LEVELS[li].waves} waves.` : `Endless on ${LEVELS[endlessLevel()].name} · ${DIFF[diff].name}`);
 }
 function drawMini(cn, wp, themeId){ paintScene(cn, wp, themeId||profile.equip.map, 7); }
+// Upgrade prices went up. If a save holds more upgrades than its stars now cover, refund them all once.
+function fitUpgrades(){
+  if (starsSpent() <= starsEarned()) return;
+  profile.up = {}; saveProfile();
+  setTimeout(() => toast('Upgrade prices changed, so all your stars were refunded. Spend them again below.'), 300);
+}
 function renderMenu(){
+  fitUpgrades();
   const earned=starsEarned(), bank=earned-starsSpent();
   $('starBank').textContent=bank; $('starTotal').textContent=earned;
   const esel=$('endlessMap');
