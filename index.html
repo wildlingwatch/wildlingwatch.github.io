@@ -253,15 +253,6 @@ kbd{font-family:var(--f-data);font-size:10px;background:var(--panel2);border:1px
 .qbar i{display:block;height:100%;background:var(--grass);border-radius:3px}
 .quest.done .qbar i,.ach.done .qbar i,.ach.cl .qbar i{background:var(--sun)}
 .wbox{display:grid;gap:8px}
-.wk-map{display:block;width:100%;height:auto;border-radius:8px}
-.mods{display:grid;gap:6px}
-.mod{font-size:12px;line-height:1.35;background:rgba(255,102,128,.1);border:1px solid rgba(255,102,128,.4);border-radius:8px;padding:5px 9px}
-.wms{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
-.lb{margin:0;padding:0 0 0 20px;display:grid;gap:4px;font-size:13px}
-.lb li::marker{color:var(--muted);font-family:var(--f-data)}
-.lb li span{display:inline-block;min-width:0;max-width:60%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom}
-.lb li b{float:right;font-weight:400;font-family:var(--f-data);font-size:12px}
-.lb li.me{color:var(--sun)}
 .badge-n{display:inline-grid;place-items:center;min-width:20px;height:20px;border-radius:10px;background:var(--berry);color:#fff;font-size:12px;margin-left:8px;padding:0 6px;font-family:var(--f-data)}
 .dex{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
 .dcard{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px;display:grid;gap:4px;justify-items:center;text-align:center;min-width:0}
@@ -300,6 +291,20 @@ kbd{font-family:var(--f-data);font-size:10px;background:var(--panel2);border:1px
 .ns-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}
 .ns-it{display:grid;gap:4px;font-size:12px;text-align:center;min-width:0}
 .ns-it canvas{width:100%;height:auto;border-radius:8px;background:#132219}
+.bosses{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.bcard{border-radius:14px;padding:14px;display:grid;gap:8px;align-content:start;min-width:0;border:2px solid transparent;background:linear-gradient(170deg,#2a1e18,var(--panel)) padding-box,linear-gradient(140deg,#c8834a,#5a3418) border-box}
+.bcard.t1{background:linear-gradient(170deg,#1e2836,var(--panel)) padding-box,linear-gradient(140deg,#e6eef8,#5a6a7e) border-box}
+.bcard.t2{background:linear-gradient(170deg,#3a1e0e,var(--panel)) padding-box,linear-gradient(140deg,#fff3a0,#ff9a1f 50%,#8a5a0a) border-box;box-shadow:0 10px 30px rgba(255,150,40,.14)}
+.bc-top{position:relative;display:grid;place-items:center;background:radial-gradient(circle at 50% 55%,rgba(255,255,255,.12),transparent 65%);border-radius:10px;padding:6px}
+.bc-top canvas{width:120px;height:120px}
+.chip-chest{position:absolute;top:6px;right:6px;font-family:var(--f-data);font-size:10px;letter-spacing:.1em;text-transform:uppercase;border-radius:999px;padding:3px 9px;background:var(--cc);color:#1a1206}
+.bcard .bn{font-family:var(--f-display);font-weight:400;font-size:22px;line-height:1.05}
+.bcard .ud{font-size:13px;color:var(--muted);line-height:1.45}
+.odds summary{cursor:pointer;font-size:13px;color:var(--ink)}
+.odds dl{display:grid;grid-template-columns:1fr auto;gap:3px 12px;margin:8px 0;font-size:13px}
+.odds dd{margin:0;font-family:var(--f-data)}
+.odds p{margin:0;font-size:12px}
+#chestCv{display:block;width:min(360px,100%);height:auto;margin:4px auto}
 .menu-head .starbank .btn{margin-left:8px;vertical-align:middle}
 .menu-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px}
 .mh{font-family:var(--f-display);font-weight:400;font-size:22px;margin:0;color:var(--ink)}
@@ -497,6 +502,7 @@ body.in-lobby .main, body.in-lobby .stats, body.in-lobby header .diffrow{display
           <button class="btn big" id="homeCosmetics" type="button">Cosmetics</button>
           <button class="btn big" id="homePass" type="button">Trail Pass</button>
           <button class="btn big" id="homeDuel" type="button">1v1 Duel</button>
+          <button class="btn big" id="homeBoss" type="button">Boss Drop</button>
           <button class="btn big" id="homeBook" type="button">Collection</button>
           <button class="btn big" id="homeTut" type="button">How to play</button>
         </div>
@@ -510,7 +516,6 @@ body.in-lobby .main, body.in-lobby .stats, body.in-lobby header .diffrow{display
       <div class="tgrid">
         <div class="tbox"><h3>Login streak</h3><div class="streak" id="streakRow"></div><div id="streakAct"></div></div>
         <div class="tbox"><h3>Daily quests</h3><div class="quests" id="questList"></div></div>
-        <div class="tbox"><h3>Weekly challenge</h3><div class="wbox" id="weeklyBox"></div></div>
       </div>
     </div>
     <div class="card">
@@ -660,6 +665,17 @@ body.in-lobby .main, body.in-lobby .stats, body.in-lobby header .diffrow{display
     </div>
   </section>
 
+  <section class="menu" id="bossPage" hidden>
+    <div class="menu-head">
+      <div class="row" style="align-items:center"><button class="btn" id="bossHome" type="button"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 11.5 12 4.5l8.5 7"/><path d="M6 10v9.5h4.5V14h3v5.5H18V10"/></svg>Home</button><h2 class="mh">Boss Drop</h2></div>
+      <div class="gembal"><b id="bossGems">0</b> gems</div>
+    </div>
+    <div class="card">
+      <p class="empty" style="margin:0">Spend gems to challenge a boss. Hold its trail for 4 waves, then defeat the boss on wave 5 to open a chest with a random drop: gems, a cosmetic, or one of the boss's exclusive looks. Bigger bosses drop better chests. Boss fights are on Normal, all six base wildlings are unlocked, and the entry fee is spent whether you win or lose.</p>
+    </div>
+    <div class="bosses" id="bossList"></div>
+  </section>
+
   <section class="menu" id="bookPage" hidden>
     <div class="menu-head">
       <div class="row" style="align-items:center"><button class="btn" id="bookHome" type="button"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 11.5 12 4.5l8.5 7"/><path d="M6 10v9.5h4.5V14h3v5.5H18V10"/></svg>Home</button><h2 class="mh">Collection</h2></div>
@@ -704,6 +720,14 @@ body.in-lobby .main, body.in-lobby .stats, body.in-lobby header .diffrow{display
             <div class="stars" id="winStars"></div>
             <p id="winText"></p>
             <div class="row"><button class="btn primary" id="winNext" type="button">Next trail</button><button class="btn" id="winMenu" type="button">Trails &amp; upgrades</button></div>
+          </div>
+        </div>
+        <div class="overlay" id="chestOv" hidden>
+          <div>
+            <h2 style="color:var(--sun)" id="chestTitle">Boss defeated!</h2>
+            <canvas id="chestCv" width="360" height="250" aria-hidden="true"></canvas>
+            <p id="chestText" role="status"></p>
+            <div class="row"><button class="btn primary" id="chestOk" type="button">Back to Boss Drop</button></div>
           </div>
         </div>
         <div class="overlay" id="confirm" hidden>
@@ -904,10 +928,9 @@ const UPG = [
 let profile = {stars:{}, up:{}, gems:50, owned:{}, saves:{}, v:2, trials:{}, offers:{}, pass:{xp:0, claimed:[], claimedP:[], premium:false, track:3}, equip:{skin:{}, hat:{}, map:'meadow', orb:'seed'}};
 try { const pr = JSON.parse(localStorage.getItem('wildling-profile')); if (pr && typeof pr==='object') profile = {stars:pr.stars||{}, up:pr.up||{}, gems: typeof pr.gems==='number' ? pr.gems : 50, owned:pr.owned||{}, saves:(pr.saves && typeof pr.saves==='object') ? pr.saves : {}, v:pr.v||0, trials:pr.trials||{}, offers:pr.offers||{}, pass:{xp:0, claimed:[], ...(pr.pass||{})}, equip:{skin:{}, hat:{}, map:'meadow', orb:'seed', ...(pr.equip||{})}}; } catch(e) {}
 if (profile.saves && profile.saves.endless) delete profile.saves.endless;
-try { const pr2 = JSON.parse(localStorage.getItem('wildling-profile')) || {}; for (const k of ['daily','streak','weekly','stats','dex','ach','achSeen']) if (pr2[k] && typeof pr2[k]==='object') profile[k]=pr2[k]; } catch(e) {}
+try { const pr2 = JSON.parse(localStorage.getItem('wildling-profile')) || {}; for (const k of ['daily','streak','stats','dex','ach','achSeen']) if (pr2[k] && typeof pr2[k]==='object') profile[k]=pr2[k]; } catch(e) {}
 profile.daily = profile.daily || {day:0, q:[], bonus:false};
 profile.streak = profile.streak || {last:0, count:0, claimed:true};
-profile.weekly = profile.weekly || {week:0, best:0, claimed:[]};
 profile.stats = profile.stats || {};
 profile.dex = {caught:{}, stage:{}, shiny:{}, ...(profile.dex||{})};
 profile.ach = profile.ach || {}; profile.achSeen = profile.achSeen || {};
@@ -1033,6 +1056,12 @@ HATS_BY.volt.push({id:'snowbeanie', kind:'beanie', cols:['#ffffff','#7fe0ff','#2
 HATS_BY.pebble.push({id:'frostcrown', kind:'crown', cols:['#bfe8ff','#4fb8ff'], name:'Frost Crown', pass:true, desc:'Carved from a single icicle'});
 HATS_BY.ember.push({id:'wscarf', kind:'scarf2', cols:['#d23b4a','#ffffff'], name:'Candy Scarf', pass:true, desc:'Red and white stripes'});
 HATS_BY.tide.push({id:'icecrown', kind:'crown', cols:['#e8faff','#7fe0ff'], name:'Ice Crown', pass:true, desc:'Fit for the Glacier King'});
+SKINS_BY.sprout.push({id:'thornking', name:'Thorn King', reward:'Boss Drop · Thorn King', rewardBtn:'Boss Drop only', desc:'Bramble bark with blood-red thorns', pal:{body:'#4a6a2a', dark:'#1a2a0a', belly:'#c9e0a0', acc:'#d23b4a', acc2:'#8fbf4a', acc3:'#ffd84a'}});
+SKINS_BY.volt.push({id:'stormwyrm', name:'Storm Wyrm', reward:'Boss Drop · Storm Wyrm', rewardBtn:'Boss Drop only', desc:'Thundercloud plates and living lightning', pal:{body:'#3a4a7a', dark:'#10183a', belly:'#9fb4e0', acc:'#fff3a0', acc2:'#7fe0ff', acc3:'#5a7aff', glow:'#9fd0ff'}});
+SKINS_BY.ember.push({id:'magmaw', name:'Magmaw', reward:'Boss Drop · Magmaw', rewardBtn:'Boss Drop only', desc:'Cooling rock over a molten core', pal:{body:'#3a1a12', dark:'#0a0402', belly:'#ff9a3c', acc:'#ffd23f', acc2:'#ff5a1f', acc3:'#ff2a0a', glow:'#ff6a22'}});
+HATS_BY.sprout.push({id:'thorncrown', kind:'crown', cols:['#5a3a1a','#d23b4a'], name:'Thorn Crown', reward:'Boss Drop · Thorn King', rewardBtn:'Boss Drop only', desc:'Woven from the Thorn King\'s brambles'});
+HATS_BY.volt.push({id:'stormhorns', kind:'horns', cols:['#9fd0ff'], name:'Storm Horns', reward:'Boss Drop · Storm Wyrm', rewardBtn:'Boss Drop only', desc:'They hum before a storm'});
+HATS_BY.ember.push({id:'magmacrown', kind:'crown', cols:['#2a1a12','#ff5a1f'], name:'Magma Crown', reward:'Boss Drop · Magmaw', rewardBtn:'Boss Drop only', desc:'Still warm to the touch'});
 // Shiny colorways: never sold, only unlocked by catching a shiny wild one.
 const SHINY_SHIFT = {ember:200, tide:140, sprout:-90, volt:150, pebble:180, gust:120, lumi:-60, gloom:150, rime:-150};
 for (const k of ORDER){
@@ -1055,6 +1084,7 @@ const SKIN_FX = {
 Object.assign(SKIN_FX.ember, {frostember:'crystal', hearth:'stripes'}); SKIN_FX.pebble.snowcap='crystal'; SKIN_FX.sprout.evergreen='spots';
 SKIN_FX.gust.snowowl='spots'; SKIN_FX.volt.northern='swirl'; SKIN_FX.tide.glacierking='crystal';
 for (const k of ORDER) SKIN_FX[k].shinyform='glow';
+SKIN_FX.sprout.thornking='veins'; SKIN_FX.volt.stormwyrm='circuit'; SKIN_FX.ember.magmaw='cracks';
 function drawSkinFx(c, kind, s, r, time, anim){
   c.save(); c.beginPath(); c.arc(0,0,r*.97,0,TAU); c.clip();
   const acc=s.acc, a2=s.acc2||s.belly, tw=anim?time:0;
@@ -1648,33 +1678,33 @@ let zones=[], shades=[];
 let S, enemies, projs, fx, pops, spawnQ, spawnT, uid, time, speed = 1, paused = false, autoT = -1;
 let placing = null, selected = null, throwMode = false, hover = null;
 let mode = 'endless', levelIdx = 0, inMenu = false;
-let best = 0, diff = 'normal', challengeRun = null;
+let best = 0, diff = 'normal', bossRun = null;
 try { diff = localStorage.getItem('wildling-diff') || 'normal'; } catch(e) {}
 if (!DIFF[diff]) diff = 'normal';
 const bestKey = (d=diff, m=endlessMap) => 'wildling-best-'+d+(m==='meadow' ? '' : '-'+m);
 function loadBest(){ best = 0; try { best = +localStorage.getItem(bestKey()) || 0; } catch(e) {} }
-function saveBest(){ if (S.mode!=='endless') return; if (S.challenge){ weeklyRecord(S.wave); if (S.wave>best) best=S.wave; return; } profile.stats.bestWave=Math.max(profile.stats.bestWave||0, S.wave); if (S.wave>best){ best=S.wave; try { localStorage.setItem(bestKey(), best); } catch(e) {} } }
+function saveBest(){ if (S.mode!=='endless') return; if (S.boss) return; profile.stats.bestWave=Math.max(profile.stats.bestWave||0, S.wave); if (S.wave>best){ best=S.wave; try { localStorage.setItem(bestKey(), best); } catch(e) {} } }
 
 function fresh(){ const dk = mode==='duel' ? 'normal' : diff, d=DIFF[dk], lives=d.lives+3*upg('grove'); return { runId: Date.now()+Math.random(), mapId:endlessMap, diff:dk, mode, level:levelIdx, berries:d.berries+25*upg('berries')+(mode==='endless'?20:0), lives, startLives:lives, wave:0, phase:'build', towers:[], unlocked:{ember:1,tide:1,sprout:1}, box:{}, placedOnce:false }; }
 function reset(data){
   const saved = data && data.S && Array.isArray(data.S.towers) ? data.S : null;
-  if (saved) challengeRun=null;
-  if (challengeRun) diff='normal';
+  if (saved) bossRun=null;
+  if (bossRun) diff='normal';
   if (saved && DIFF[saved.diff]) diff = saved.diff;
   if (saved && saved.mode){ mode = saved.mode==='duel' ? 'endless' : saved.mode; levelIdx = Math.min(LEVELS.length-1, saved.level||0); }
   if (saved && saved.mapId && LEVELS.some(L=>L.id===saved.mapId)) endlessMap=saved.mapId;
   if (mode==='campaign') setPath(LEVELS[levelIdx].paths || LEVELS[levelIdx].path, 11+levelIdx*7);
-  else if (mode==='endless'){ const ei=challengeRun ? Math.max(0, LEVELS.findIndex(L=>L.id===challengeRun.map)) : endlessLevel(), EL=LEVELS[ei]; setPath(EL.paths || EL.path, ei===0 ? 7 : 11+ei*7); }
+  else if (mode==='endless'){ const ei=bossRun ? bossRun.map : endlessLevel(), EL=LEVELS[ei]; setPath(EL.paths || EL.path, ei===0 ? 7 : 11+ei*7); }
   else setPath(ENDLESS_MAP, 7);
   S = fresh(); loadBest();
   if (saved) { Object.assign(S, saved); S.diff = diff; S.mode = mode; S.phase = 'build'; }
-  S.mods = challengeRun ? {...challengeRun.fx} : {}; S.challenge = challengeRun ? challengeRun.week : 0;
-  if (challengeRun){ if (challengeRun.fx.lives){ S.lives=S.startLives=Math.max(5, Math.round(S.lives*challengeRun.fx.lives)); } best=weeklyState().best; }
+  S.boss = bossRun ? bossRun.id : null;
+  if (bossRun){ S.berries=bossRun.berries+25*upg('berries'); S.unlocked={ember:1,tide:1,sprout:1,volt:1,pebble:1,gust:1}; best=0; }
   $('confirm').hidden = true;
   enemies=[]; projs=[]; fx=[]; pops=[]; zones=[]; shades=[]; spawnQ=[]; spawnT=0; uid=1000; time=0; autoT=-1;
   S.towers.forEach(t => { t.cd=0; t.face=1; t.target=t.target||'first'; t.path=t.path||Array(t.stage||0).fill(0); t.x=(t.c+.5)*T; t.y=(t.r+.5)*T; uid=Math.max(uid,t.id+1); });
   placing=null; selected=null; throwMode=false;
-  $('over').hidden = true; $('win').hidden = true; $('hint').hidden = S.placedOnce;
+  $('over').hidden = true; $('win').hidden = true; $('chestOv').hidden = true; $('hint').hidden = S.placedOnce;
   partyDrawn = {}; syncDiffSeg(); syncParty(); renderTowerPanel(true); syncHUD();
 }
 
@@ -1724,6 +1754,7 @@ const TITANS = {
   burrower:{name:'Tunneler', desc:'Dives underground where nothing can hit it'},
 };
 function buildWave(n){
+  if (S.boss) return bossWave(n);
   const q=[], count=Math.min(90, Math.round(Math.min(6+Math.floor(n*1.7), 60)*(MOD().count||1))), theme=waveTheme(n);
   const rnd = S.mode==='duel' ? rng(duelSeed*977+n) : Math.random;
   const EZ=S.mode==='endless', hpMul=(EZ ? (1+.27*(n-1))*(1+.013*(n-1)*(n-1))*.88*(n<6 ? .75+.05*(n-1) : 1) : (1+.3*(n-1))*(1+.015*(n-1)*(n-1)))*DIFF[S.diff].hp*(S.mode==='campaign'?LEVELS[S.level].tough:1)*(MOD().hp||1), gap=Math.max(.32,.85-n*.02);
@@ -1737,7 +1768,7 @@ function startWave(){
   if (S.phase!=='build') return;
   sfx('wave'); S.wave++; S.phase='wave'; spawnQ=buildWave(S.wave); spawnT=.4; autoT=-1;
   $('hint').hidden = true; S.placedOnce = true;
-  { const ti=spawnQ.find(q=>q.titan); toast(ti ? `Wave ${S.wave}: a TITAN ${SP[ti.sp].names[3]} approaches! ${TITANS[ti.titan].desc}.` : isAlpha(S.wave) ? `Wave ${S.wave}: an alpha ${SP[waveTheme(S.wave)].names[0]} approaches!` : `Wave ${S.wave} incoming`); }
+  { const ti=spawnQ.find(q=>q.titan); toast(ti && ti.bossId ? `Wave 5: the ${BOSS_BY[ti.bossId].name} arrives! ${TITANS[ti.titan].desc}.` : ti ? `Wave ${S.wave}: a TITAN ${SP[ti.sp].names[3]} approaches! ${TITANS[ti.titan].desc}.` : isAlpha(S.wave) ? `Wave ${S.wave}: an alpha ${SP[waveTheme(S.wave)].names[0]} approaches!` : `Wave ${S.wave} incoming`); }
   syncHUD();
 }
 function spawn(q){
@@ -1751,7 +1782,8 @@ function spawn(q){
     e.healT=1.5; e.burT=2+Math.random()*2; e.wardT=.8; e.dashT=1+Math.random()*2; e.shield=0;
     S.seen=S.seen||{}; if (!S.seen[q.trait]){ S.seen[q.trait]=1; toast(`New wild one: ${tr.name}. ${tr.desc.split('.')[0]}.`); }
   }
-  if (q.titan){ e.titan=q.titan; e.r=27; e.reward*=2; e.xpv*=2; e.broodNext=.75; if (q.titan!=='brood'){ e.trait=q.titan; e.healT=1.5; e.burT=3; e.wardT=.8; e.shield=0; } }
+  if (q.bossId){ e.bossId=q.bossId; e.reward=Math.round(e.reward*1.5); }
+  if (q.titan){ e.titan=q.titan; e.r=q.bossId?31:27; e.reward*=2; e.xpv*=2; e.broodNext=.75; if (q.titan!=='brood'){ e.trait=q.titan; e.healT=1.5; e.burT=3; e.wardT=.8; e.shield=0; } }
   if (!q.boss && !q.rare && S.mode!=='duel' && Math.random()<1/200){ e.shiny=true; e.reward*=3; sfx('evolve'); toast(`A shiny ${s.names[0]} appeared! Catch it to keep its colors.`); }
   e.route = routeTurn++ % ROUTES.length; e.frost=0; [e.x,e.y]=posAt(0, e.route); enemies.push(e);
   if (e.rare) toast(`A rare ${SP[e.sp].names[0]} appeared! Throw an orb to catch it.`);
@@ -1953,7 +1985,7 @@ function update(dt){
     const step = e.spd*(e.slowT>0?e.slowF:1)*(1-Math.min(.2,(e.frost||0)*.04))*(e.under?1.3:1)*(e.trait==='swift' && e.dashT<.6 ? 1.9 : 1)*T*dt;
     if (e.fearT>0){ e.fearT-=dt; e.dist=Math.max(0, e.dist-step*.75); } else e.dist += step;
     const px=e.x; [e.x,e.y]=posAt(e.dist, e.route); if (Math.abs(e.x-px)>.01) e.face = e.x<px?-1:1;
-    if (e.dist>=ROUTES[e.route].total){ e.dead=true; if (e.rare){ toast(`The rare ${SP[e.sp].names[0]} slipped away`); continue; } if (e.shiny) toast(`The shiny ${SP[e.sp].names[0]} got away`); const lost=e.titan?8:e.boss?5:1; S.lives-=lost; sfx('leak'); pop(W-30, e.y-20, `-${lost} Grove`, '#ff6680', 11); fx.push({k:'flash', t:0, max:.3}); }
+    if (e.dist>=ROUTES[e.route].total){ e.dead=true; if (e.rare){ toast(`The rare ${SP[e.sp].names[0]} slipped away`); continue; } if (e.shiny) toast(`The shiny ${SP[e.sp].names[0]} got away`); const lost=e.bossId?S.lives:e.titan?8:e.boss?5:1; S.lives-=lost; sfx('leak'); pop(W-30, e.y-20, `-${lost} Grove`, '#ff6680', 11); fx.push({k:'flash', t:0, max:.3}); }
   }
   for (const z of zones){ z.t+=dt; for (const e of enemies) if (!e.dead && Math.hypot(e.x-z.x,e.y-z.y)<z.r){ e.slowT=Math.max(e.slowT,.35); e.slowF=Math.min(e.slowF,.6); } }
   zones=zones.filter(z=>z.t<z.max);
@@ -1982,9 +2014,10 @@ function update(dt){
 
   if (S.lives<=0 && S.phase!=='over'){ S.lives=0; S.phase='over'; gameOver(); return; }
   if (S.phase==='wave' && !spawnQ.length && !enemies.length){
-    S.phase='build'; const bonus=Math.round((25+4*S.wave)*DIFF[S.diff].reward*(S.mode==='endless'?1.08:1)*(1+.15*upg('forage'))*(MOD().berries||1)); track('waves'); if (S.challenge) track('weeklyWaves'); S.berries+=bonus;
+    S.phase='build'; const bonus=Math.round((25+4*S.wave)*DIFF[S.diff].reward*(S.mode==='endless'?1.08:1)*(1+.15*upg('forage'))*(MOD().berries||1)); track('waves'); S.berries+=bonus;
     addGems(1); if (!(S.mode==='campaign' && S.wave>=LEVELS[S.level].waves)) sfx('clear'); toast(`Wave ${S.wave} cleared · +${bonus} berries · +1 gem`); addPassXP(10);
     saveBest();
+    if (S.boss && S.wave>=5){ bossWon(); return; }
     if (S.mode==='campaign' && S.wave>=LEVELS[S.level].waves){ winLevel(); return; }
     saveRun();
     if ($('autoWave').checked || S.mode==='duel') autoT=2.2;
@@ -2008,11 +2041,11 @@ function gameOver(){
   sfx('over'); clearRunSave();
   saveBest();
   if (S.mode==='duel'){ duelActive=false; myDuel.alive=false; myDuel.playing=false; duelPush(); const rp=rivalPeer(); if (!(rp && rp.isMe)) addPassXP(10); }
-  $('again').textContent = S.mode==='duel' ? 'Back to lobby' : 'Try again';
+  $('again').textContent = S.mode==='duel' ? 'Back to lobby' : S.boss ? 'Back to Boss Drop' : 'Try again';
   $('overText').textContent = S.mode==='duel' ? `Your Grove fell on wave ${S.wave}. ${rivalName()} wins this duel.`
     : S.mode==='campaign'
     ? `${LEVELS[S.level].name} was overrun on wave ${S.wave} of ${LEVELS[S.level].waves}.`
-    : S.challenge ? `Weekly challenge: you reached wave ${S.wave}. Your best this week is wave ${weeklyState().best}.`
+    : S.boss ? `The ${BOSS_BY[S.boss].name} broke through on wave ${S.wave} of 5. The ${BOSS_BY[S.boss].cost}-gem entry fee is spent.`
     : `You held the trail until wave ${S.wave} on ${DIFF[S.diff].name}. Your best on ${DIFF[S.diff].name} is wave ${best}.`;
   $('over').hidden=false; throwMode=false; placing=null; syncHUD();
 }
@@ -2043,7 +2076,7 @@ function render(){
     if (e.trait==='phantom'){ ctx.save(); ctx.globalAlpha=.45+.25*Math.sin(time*7+e.seed); }
     if (e.titan){ const g=.3+.15*Math.sin(time*4); ctx.fillStyle=`rgba(255,70,60,${g})`; ctx.beginPath(); ctx.arc(e.x,e.y,e.r*1.7,0,TAU); ctx.fill(); ctx.strokeStyle='rgba(255,120,80,.9)'; ctx.lineWidth=2; ctx.setLineDash([6,5]); ctx.lineDashOffset=-time*20; ctx.beginPath(); ctx.arc(e.x,e.y,e.r*1.45,0,TAU); ctx.stroke(); ctx.setLineDash([]); }
     if (e.shiny){ const g=.22+.12*Math.sin(time*5); ctx.fillStyle=`rgba(255,240,150,${g})`; ctx.beginPath(); ctx.arc(e.x,e.y,e.r*1.8,0,TAU); ctx.fill(); }
-    drawCritter(ctx, e.sp, e.x, e.y, e.r, e.titan?3:e.boss?2:0, time*(e.stunT>0?0:1.3), {flip:e.face<0, wild:true, seed:e.seed, skin:e.shiny?'shinyform':undefined});
+    drawCritter(ctx, e.sp, e.x, e.y, e.r, e.titan?3:e.boss?2:0, time*(e.stunT>0?0:1.3), {flip:e.face<0, wild:true, seed:e.seed, skin:e.bossId?BOSS_BY[e.bossId].skin:e.shiny?'shinyform':undefined, hat:e.bossId?BOSS_BY[e.bossId].hat:undefined});
     if (e.trait==='phantom') ctx.restore();
     if (e.trait) drawTrait(e);
     if (e.shield>0){ ctx.save(); ctx.fillStyle='rgba(111,195,255,.18)'; ctx.strokeStyle='rgba(160,220,255,.8)'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(e.x,e.y,e.r*1.35,0,TAU); ctx.fill(); ctx.stroke(); ctx.restore(); }
@@ -2099,7 +2132,7 @@ function render(){
   { const ti=enemies.find(e=>e.titan && !e.dead); if (ti){ const bw=Math.min(W*.56,340), bx=(W-bw)/2, by=H-30;
     ctx.fillStyle='rgba(10,16,12,.82)'; ctx.fillRect(bx-8,by-16,bw+16,30); ctx.fillStyle='#3a1a1a'; ctx.fillRect(bx,by,bw,8); ctx.fillStyle='#ff5a4a'; ctx.fillRect(bx,by,bw*Math.max(0,ti.hp/ti.max),8);
     if (ti.shield>0){ ctx.fillStyle='rgba(111,195,255,.8)'; ctx.fillRect(bx,by,bw*Math.min(1,ti.shield/ti.max),3); }
-    ctx.font='10px Silkscreen, monospace'; ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.fillStyle='#ffd0c8'; ctx.fillText(`TITAN ${SP[ti.sp].names[3].toUpperCase()} · ${TITANS[ti.titan].name.toUpperCase()}`, W/2, by-4); } }
+    ctx.font='10px Silkscreen, monospace'; ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.fillStyle='#ffd0c8'; ctx.fillText(`${ti.bossId?BOSS_BY[ti.bossId].name.toUpperCase():'TITAN '+SP[ti.sp].names[3].toUpperCase()} · ${TITANS[ti.titan].name.toUpperCase()}`, W/2, by-4); } }
   if (paused && S.phase!=='over'){ ctx.fillStyle='rgba(8,16,12,.45)'; ctx.fillRect(0,0,W,H); ctx.font='28px Bungee, sans-serif'; ctx.fillStyle='#ffc94a'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('PAUSED',W/2,H/2); }
 }
 // Rare wild ones: a coloured glow, a wide gold-edged health bar, a RARE tag and a catch prompt when weak.
@@ -2190,7 +2223,7 @@ $('startBtn').addEventListener('click', startWave);
 $('speedBtn').addEventListener('click', () => { speed = speed===3?1:speed+1; $('speedBtn').textContent=`Speed ${speed}×`; });
 $('pauseBtn').addEventListener('click', () => { if (S.mode==='duel' && !paused){ toast('Duels cannot be paused'); return; } paused=!paused; $('pauseBtn').textContent=paused?'Resume':'Pause'; $('pauseBtn').classList.toggle('on',paused); });
 $('orbBtn').addEventListener('click', () => { if (!throwMode && S.berries<ORB_COST){ toast('Not enough berries for an orb'); return; } setThrow(!throwMode); if (throwMode && !enemies.length) toast('Orbs work on wild ones on the trail'); });
-$('again').addEventListener('click', () => { if (S.mode==='duel') openDuelScreen(); else reset(); });
+$('again').addEventListener('click', () => { if (S.mode==='duel') openDuelScreen(); else if (S.boss) openBossPage(); else reset(); });
 let pendingAct = null, wasPaused = false;
 function ask(title, text, yes, act){ pendingAct=act; wasPaused=paused; paused=true; $('confirmTitle').textContent=title; $('confirmText').textContent=text; $('confirmYes').textContent=yes; $('confirm').hidden=false; $('confirmYes').focus(); }
 function syncDiffSeg(){
@@ -2201,6 +2234,7 @@ function setDiff(k){ diff=k; try { localStorage.setItem('wildling-diff',k); } ca
 $('diffSeg').addEventListener('click', ev => {
   const b = ev.target.closest('button[data-k]'); if (!b) return;
   const k = b.dataset.k;
+  if (S.boss && !inMenu && !inHome){ toast('Boss fights are always on Normal'); return; }
   if (k===diff && S.phase!=='over') return;
   if (S.phase==='over' || (S.wave===0 && !S.towers.length)){ setDiff(k); return; }
   ask(`Restart on ${DIFF[k].name}?`, 'Your current run ends and the Grove starts fresh.', 'Restart', () => setDiff(k));
@@ -2257,6 +2291,9 @@ function openShop(target){
 }
 $('homeCosmetics').addEventListener('click', () => openShop('deals'));
 $('homeBook').addEventListener('click', openBook);
+$('homeBoss').addEventListener('click', openBossPage);
+$('bossHome').addEventListener('click', openHome);
+$('chestOk').addEventListener('click', openBossPage);
 $('bookHome').addEventListener('click', openHome);
 $('shopHome').addEventListener('click', openHome);
 $('shopTrails').addEventListener('click', openMenu);
@@ -2283,6 +2320,7 @@ function clearRunSave(){
 }
 function leaveRun(dest){
   const started = S.wave>0 || S.towers.length;
+  if (S.boss && S.phase!=='over' && S.phase!=='won'){ ask('Leave the boss fight?', `The fight ends here and the ${BOSS_BY[S.boss].cost}-gem entry fee is spent.`, 'Leave fight', dest); return; }
   if (S.mode==='endless' && started && S.phase!=='over'){ ask('Leave this run?', 'Endless runs are not saved, so this run ends here. Your best wave is kept.', 'Leave run', dest); return; }
   if (S.mode==='duel' && duelActive){ ask('Leave the duel?', 'Leaving counts as a loss.', 'Leave duel', dest); return; }
   if (S.phase==='build' && started){ saveRun(); dest(); return; }
@@ -2320,9 +2358,9 @@ $('saves').addEventListener('click', ev => {
 $('saveBtn').addEventListener('click', () => { if (saveRun()) openMenu(); });
 $('endlessMap').addEventListener('change', e => { endlessMap=e.target.value; try { localStorage.setItem('wildling-endless-map', endlessMap); } catch(err) {} renderMenu(); });
 function startRun(m, li=0){
-  challengeRun = m==='weekly' ? weeklyInfo() : null; if (m==='weekly') m='endless';
+  bossRun = m==='boss' ? BOSSES[li] : null; if (m==='boss'){ m='endless'; li=0; }
   const ended=useTrials(); mode=m; levelIdx=li; closeMenu(); reset();
-  if (challengeRun){ toast(`Weekly challenge on ${LEVELS.find(L=>L.id===challengeRun.map).name}: ${challengeRun.mods.map(x=>x.name).join(' + ')}`); return; }
+  if (bossRun){ toast(`Boss Drop: hold ${LEVELS[bossRun.map].name} for 4 waves, then defeat the ${bossRun.name} on wave 5`); return; }
   if (ended.length) setTimeout(() => { const it=itemFromKey(ended[0]); toast(`Your ${it.name} trial ended. Keep it for 20% off in Cosmetics.`); }, 2600);
   toast(m==='campaign' ? `Trail ${li+1}: ${LEVELS[li].name}. Survive ${LEVELS[li].waves} waves.` : `Endless on ${LEVELS[endlessLevel()].name} · ${DIFF[diff].name}`);
 }
@@ -2409,7 +2447,7 @@ function renderShop(){
     let btns = eq ? `<button type="button" class="btn" disabled>Equipped</button>`
       : usable ? `<button type="button" class="btn" data-act="equip" data-id="${it.id}">Equip</button>`
       : it.shiny ? `<button type="button" class="btn" disabled>Catch a shiny</button>`
-      : it.reward ? `<button type="button" class="btn" disabled>Login reward</button>`
+      : it.reward ? `<button type="button" class="btn" disabled>${it.rewardBtn||'Login reward'}</button>`
       : it.pass && pastS ? `<button type="button" class="btn" disabled>No longer available</button>`
       : it.pass && futS ? `<button type="button" class="btn" disabled>${sName}</button>`
       : it.pass ? `<button type="button" class="btn" disabled>${pw&&pw.prem&&!profile.pass.premium?'Premium pass':'Reach tier '+tier}</button>`
@@ -2437,8 +2475,7 @@ $('shop').addEventListener('click', ev => {
 });
 
 
-/* ================= live systems: quests, streak, weekly, achievements, deals, bundles ================= */
-let LEADER = null; // the website version plugs a global leaderboard in here
+/* ================= live systems: quests, streak, achievements, Boss Drop, deals, bundles ================= */
 const QUESTS = {
   waves:{ev:'waves', n:12, gems:15, text:()=>'Clear 12 waves'},
   kos:{ev:'kos', n:150, gems:15, text:()=>'Knock out 150 wild ones'},
@@ -2448,7 +2485,6 @@ const QUESTS = {
   trail:{ev:'trails', n:1, gems:25, text:()=>'Clear a campaign trail'},
   alpha:{ev:'alphas', n:2, gems:20, text:()=>'Defeat or catch 2 alphas'},
   place:{ev:'placed', n:10, gems:10, text:()=>'Station 10 wildlings'},
-  weekly:{ev:'weeklyWaves', n:8, gems:20, text:()=>'Clear 8 waves in the weekly challenge'},
 };
 const QUEST_BONUS = 20;
 function dailyQuests(){
@@ -2477,22 +2513,6 @@ function claimStreak(){
   if (rw.item && !profile.owned[rw.item]){ profile.owned[rw.item]=true; toast('Day 7! +100 gems and the Streak Pod orb.'); } else toast(`Day ${st.count} reward claimed`);
   saveProfile(); checkAch(); renderToday();
 }
-// ---- weekly challenge ----
-const WMODS = [
-  {id:'rush', name:'Rush Hour', desc:'Wild ones move 25% faster', fx:{spd:1.25}},
-  {id:'horde', name:'Horde', desc:'50% more wild ones, each with 30% less health', fx:{count:1.5, hp:.7}},
-  {id:'pack', name:'Alpha Pack', desc:'An alpha leads every third wave', fx:{alphaEvery:3}},
-  {id:'lean', name:'Lean Season', desc:'25% fewer berries', fx:{berries:.75}},
-  {id:'glass', name:'Glass Grove', desc:'Start with half the Grove', fx:{lives:.5}},
-  {id:'iron', name:'Iron Hide', desc:'From wave 4, every wild one is armored', fx:{armor:1}},
-];
-const W_MS = [{wave:10, gems:20, xp:30}, {wave:20, gems:40, xp:50}, {wave:30, gems:80, xp:80}];
-function weeklyInfo(){
-  const w=weekNum(), r=rng(w*104729+7), map=LEVELS[(r()*LEVELS.length)|0].id, a=(r()*WMODS.length)|0; let b=(r()*(WMODS.length-1))|0; if (b>=a) b++;
-  const mods=[WMODS[a], WMODS[b]], fx={}; mods.forEach(m=>Object.assign(fx, m.fx)); return {week:w, map, mods, fx};
-}
-function weeklyState(){ const w=weekNum(); if (profile.weekly.week!==w) profile.weekly={week:w, best:0, claimed:[]}; return profile.weekly; }
-function weeklyRecord(wave){ const ws=weeklyState(); if (wave>ws.best){ ws.best=wave; profile.stats.weeklyBest=Math.max(profile.stats.weeklyBest||0, wave); saveProfile(); if (LEADER) LEADER.submit(ws.week, wave); } }
 // ---- achievements and collection milestones ----
 const ownedCount = () => Object.keys(profile.owned).filter(k=>profile.owned[k]).length;
 const trailsN = () => LEVELS.filter(L=>profile.stars[L.id]).length;
@@ -2517,20 +2537,113 @@ const ACH = [
   {id:'titan10', g:'ach', name:'Titan Tamer', desc:'Defeat or catch 10 titans', cur:()=>profile.stats.titans||0, need:10, gems:80},
   {id:'streak7', g:'ach', name:'Regular', desc:'Play 7 days in a row', cur:()=>profile.streak.best||profile.streak.count||0, need:7, gems:50},
   {id:'quests20', g:'ach', name:'Quest Taker', desc:'Complete 20 daily quests', cur:()=>profile.stats.quests||0, need:20, gems:50},
-  {id:'weekly30', g:'ach', name:'Challenger', desc:'Reach wave 30 in a weekly challenge', cur:()=>profile.stats.weeklyBest||0, need:30, gems:60},
+  {id:'boss1', g:'ach', name:'Boss Hunter', desc:'Defeat a Boss Drop boss', cur:()=>profile.stats.bosses||0, need:1, gems:30},
+  {id:'boss10', g:'ach', name:'Chest Hoarder', desc:'Defeat 10 Boss Drop bosses', cur:()=>profile.stats.bosses||0, need:10, gems:80},
   {id:'duel1', g:'ach', name:'Duelist', desc:'Win a 1v1 duel', cur:()=>profile.stats.duelWins||0, need:1, gems:30},
 ];
 const achReady = () => ACH.filter(a=>!profile.ach[a.id] && a.cur()>=a.need).length;
 function checkAch(){ for (const a of ACH) if (!profile.achSeen[a.id] && a.cur()>=a.need){ profile.achSeen[a.id]=1; saveProfile(); toast(`${a.g==='col'?'Collection milestone':'Achievement'}: ${a.name}! Claim ${a.gems} gems in Collection.`); return; } }
+// ---- Boss Drop: pay gems to fight a boss, win a chest with a random drop ----
+const BOSSES = [
+  {id:'thorn', name:'Thorn King', sp:'sprout', skin:'thornking', hat:'thorncrown', power:'mender', tier:0, chest:'Bronze', cost:40, map:0, offset:0, berries:340, hpX:16, desc:'A towering bramble that heals the wild ones around it.'},
+  {id:'storm', name:'Storm Wyrm', sp:'volt', skin:'stormwyrm', hat:'stormhorns', power:'warden', tier:1, chest:'Silver', cost:100, map:4, offset:4, berries:850, hpX:10, desc:'Crackling coils that shield every wild one nearby.'},
+  {id:'magma', name:'Magmaw', sp:'ember', skin:'magmaw', hat:'magmacrown', power:'brood', tier:2, chest:'Gold', cost:200, map:7, offset:8, berries:1500, hpX:10, desc:'A molten giant that sheds burning young as it cracks.'},
+];
+const BOSS_BY = Object.fromEntries(BOSSES.map(b=>[b.id,b]));
+const CHESTS = [
+  {name:'Bronze', col:'#c8834a', dark:'#5a3418', gems:[30,60], odds:{gems:.6, cos:.32, ex:.08}, price:[0,120]},
+  {name:'Silver', col:'#d6e0ec', dark:'#5a6a7e', gems:[80,140], odds:{gems:.45, cos:.4, ex:.15}, price:[90,200]},
+  {name:'Gold', col:'#ffd84a', dark:'#8a5a0a', gems:[180,300], odds:{gems:.3, cos:.45, ex:.25}, price:[150,9999]},
+];
+const bossKeys = B => [`skin:${B.sp}:${B.skin}`, `hat:${B.sp}:${B.hat}`];
+function buyablePool(){
+  const pool=[];
+  for (const k of ORDER){ for (const s of SKINS_BY[k]) if (s.price>0) pool.push(`skin:${k}:${s.id}`); for (const h of HATS_BY[k]) if (h.price>0) pool.push(`hat:${k}:${h.id}`); }
+  for (const [id,v] of Object.entries(THEMES)) if (v.price>0) pool.push('map:'+id);
+  for (const [id,v] of Object.entries(ORBS)) if (v.price>0) pool.push('orb:'+id);
+  return pool;
+}
+function bossWave(n){
+  const B=BOSS_BY[S.boss]; let q; S.boss=null;
+  try { q = buildWave(n+B.offset).filter(x=>!x.boss && !x.rare); } finally { S.boss=B.id; }
+  q = q.filter((x,i)=>i%10<7).map(x=>({...x, hp:x.hp*.75})); // lighter escorts: the boss is the real test
+  if (n>=5){ const hpMul = q.length ? q[0].hp/.75/SP[q[0].sp].hp : 1; q=q.slice(0,6); q.push({sp:B.sp, hp:SP[B.sp].hp*hpMul*B.hpX, boss:true, titan:B.power, bossId:B.id, gap:1.6}); }
+  return q;
+}
+function rollDrop(B){
+  const C=CHESTS[B.tier], r=Math.random(), ex=bossKeys(B).filter(k=>!profile.owned[k]);
+  const all=buyablePool().filter(k=>!profile.owned[k]), band=all.filter(k=>{ const p=itemPrice(k); return p>=C.price[0] && p<=C.price[1]; }), cos=band.length?band:all;
+  let kind = r<C.odds.ex ? 'ex' : r<C.odds.ex+C.odds.cos ? 'cos' : 'gems';
+  if (kind==='ex' && !ex.length) kind='cos';
+  if (kind==='cos' && !cos.length) kind='gems';
+  if (kind==='gems'){ const n=C.gems[0]+Math.floor(Math.random()*(C.gems[1]-C.gems[0]+1)); addGems(n); return {kind, n}; }
+  const list=kind==='ex'?ex:cos, key=list[(Math.random()*list.length)|0]; grantKey(key); saveProfile(); return {kind, key};
+}
+let chestAnim=null;
+function bossWon(){
+  const B=BOSS_BY[S.boss]; S.phase='won'; sfx('win'); throwMode=false; placing=null;
+  profile.stats['boss_'+B.id]=(profile.stats['boss_'+B.id]||0)+1; track('bosses');
+  const drop=rollDrop(B); checkAch();
+  $('chestTitle').textContent=`${B.name} defeated!`;
+  $('chestText').textContent='';
+  $('chestOv').hidden=false; chestAnim={t:0, B, drop, last:performance.now(), img:null, shown:false};
+  if (drop.key){ const it=itemFromKey(drop.key), tmp=document.createElement('canvas'); tmp.width=it.kind==='map'?192:120; tmp.height=120; drawItem(tmp, drop.key); chestAnim.img=tmp; }
+  else { const tmp=document.createElement('canvas'); tmp.width=150; tmp.height=96; drawGemPile(tmp, drop.n>=150?5:drop.n>=80?3:2); chestAnim.img=tmp; }
+  requestAnimationFrame(chestFrame); syncHUD();
+}
+function chestFrame(now){
+  const A=chestAnim; if (!A || $('chestOv').hidden) return;
+  A.t += REDUCED ? 5 : Math.min(.05,(now-A.last)/1000); A.last=now;
+  const cn=$('chestCv'), c=cn.getContext('2d'), w=cn.width, h=cn.height, C=CHESTS[A.B.tier], t=A.t, open=t>1.4;
+  c.setTransform(1,0,0,1,0,0); c.clearRect(0,0,w,h);
+  const cx=w/2, by=h*.78;
+  if (open){ const k=Math.min(1,(t-1.4)/.5);
+    c.save(); c.translate(cx,by-40); c.rotate(t*.4); for (let i=0;i<12;i++){ c.rotate(TAU/12); const g=c.createLinearGradient(0,0,0,-h); g.addColorStop(0,`rgba(255,236,160,${.35*k})`); g.addColorStop(1,'rgba(255,236,160,0)'); c.fillStyle=g; c.beginPath(); c.moveTo(0,0); c.lineTo(-22,-h); c.lineTo(22,-h); c.closePath(); c.fill(); } c.restore(); }
+  const shake = !open ? Math.sin(t*38)*Math.min(1,t)*3.5 : 0;
+  c.save(); c.translate(cx+shake, by);
+  c.fillStyle='rgba(0,0,0,.35)'; c.beginPath(); c.ellipse(0,6,74,10,0,0,TAU); c.fill();
+  c.fillStyle=C.col; c.strokeStyle=C.dark; c.lineWidth=4; c.beginPath(); c.roundRect(-64,-58,128,58,8); c.fill(); c.stroke();
+  c.fillStyle=C.dark; c.fillRect(-64,-36,128,8); c.fillRect(-36,-58,10,58); c.fillRect(26,-58,10,58);
+  if (!open){ c.fillStyle=C.col; c.beginPath(); c.roundRect(-68,-92,136,38,[18,18,6,6]); c.fill(); c.stroke(); c.fillStyle=C.dark; c.fillRect(-36,-92,10,38); c.fillRect(26,-92,10,38);
+    c.fillStyle='#fff3c0'; c.beginPath(); c.roundRect(-9,-66,18,20,4); c.fill(); c.strokeStyle=C.dark; c.lineWidth=2; c.stroke(); }
+  else { c.save(); c.translate(0,-58); c.scale(1,-.35); c.fillStyle=shadeHex(C.col,-.12); c.strokeStyle=C.dark; c.lineWidth=4; c.beginPath(); c.roundRect(-68,0,136,38,[6,6,18,18]); c.fill(); c.stroke(); c.restore();
+    c.fillStyle='rgba(255,240,170,.85)'; c.beginPath(); c.ellipse(0,-58,58,7,0,0,TAU); c.fill(); }
+  c.restore();
+  if (open && A.img){ const k=Math.min(1,(t-1.5)/.5); if (k>0){ const ease=1-Math.pow(1-k,3), sz=110*(.4+.6*ease), y=by-60-ease*h*.32, iw=A.img.width>A.img.height?sz*1.5:sz;
+    c.globalAlpha=Math.min(1,k*2); c.drawImage(A.img, cx-iw/2, y-sz/2, iw, sz); c.globalAlpha=1; } }
+  if (open && !A.shown && t>1.9){ A.shown=true; sfx('caught');
+    const d=A.drop, txt = d.kind==='gems' ? `${C.name} chest: ${d.n} gems!` : d.kind==='ex' ? `Boss exclusive! ${itemLabel(d.key)} is yours.` : `${C.name} chest: ${itemLabel(d.key)} is yours!`;
+    $('chestText').textContent = txt + (d.key ? ' Equip it in Cosmetics.' : ''); }
+  if (t<4 || !A.shown) requestAnimationFrame(chestFrame); else if (open) requestAnimationFrame(chestFrame);
+}
+function renderBoss(){
+  $('bossGems').textContent=profile.gems.toLocaleString();
+  $('bossList').innerHTML = BOSSES.map((B,i) => { const C=CHESTS[B.tier], wins=profile.stats['boss_'+B.id]||0, afford=profile.gems>=B.cost;
+    return `<div class="bcard t${B.tier}"><div class="bc-top"><canvas width="168" height="168" data-b="${i}" aria-hidden="true"></canvas><span class="chip-chest" style="--cc:${C.col}">${C.name} chest</span></div>
+      <div class="bn">${B.name}</div><div class="ud">${B.desc}</div>
+      <div class="meta">Trail: ${LEVELS[B.map].name} · ${['Easier','Harder','Hardest'][B.tier]} · defeated ${wins}×</div>
+      <ul class="bitems">${bossKeys(B).map(k=>`<li class="${profile.owned[k]?'own':''}">${itemLabel(k)}</li>`).join('')}</ul>
+      <details class="odds"><summary>Drop odds</summary><dl><dt>Gems (${C.gems[0]}–${C.gems[1]})</dt><dd>${Math.round(C.odds.gems*100)}%</dd><dt>Cosmetic from the shop</dt><dd>${Math.round(C.odds.cos*100)}%</dd><dt>Boss exclusive</dt><dd>${Math.round(C.odds.ex*100)}%</dd></dl><p class="meta">You never get something you already own. If you own both exclusives, that roll becomes a shop cosmetic; if you own every cosmetic, it becomes gems.</p></details>
+      <button type="button" class="btn ${afford?'primary':''}" data-boss="${i}" ${afford?'':'disabled'}>Fight · ${B.cost} gems</button></div>`; }).join('');
+  document.querySelectorAll('#bossList canvas').forEach(cn => { const B=BOSSES[+cn.dataset.b]; drawPortrait(cn, B.sp, 3, false, {skin:B.skin, hat:B.hat}); });
+}
+function openBossPage(){
+  hideTip(); leaveLobbyScreen(); closeTutorial(); inHome=false; inMenu=true; $('chestOv').hidden=true;
+  document.body.classList.remove('in-home','in-game'); document.body.classList.add('in-menu');
+  $('home').hidden=true; $('menu').hidden=true; $('bossPage').hidden=false; renderBoss(); try { window.scrollTo(0,0); } catch(e) {}
+}
+document.addEventListener('click', ev => {
+  const b=ev.target.closest && ev.target.closest('button[data-boss]'); if (!b || b.disabled) return;
+  const i=+b.dataset.boss, B=BOSSES[i];
+  if (!b.dataset.armed){ document.querySelectorAll('button[data-boss]').forEach(x=>{ if (x!==b && x.dataset.armed){ delete x.dataset.armed; x.textContent=`Fight · ${BOSSES[+x.dataset.boss].cost} gems`; } }); b.dataset.armed='1'; b.textContent=`Tap again to spend ${B.cost} gems`; return; }
+  if (profile.gems<B.cost) return; profile.gems-=B.cost; saveProfile(); sfx('coin'); startRun('boss', i);
+});
 // ---- daily deals and bundles ----
 function itemPrice(key){ const it=itemFromKey(key); return it.price||0; }
 let dealMemo = {d:-1, keys:[]};
 function dealKeys(){
   const d=dayNum(); if (dealMemo.d===d) return dealMemo.keys;
-  const pool=[];
-  for (const k of ORDER){ for (const s of SKINS_BY[k]) if (s.price>0) pool.push(`skin:${k}:${s.id}`); for (const h of HATS_BY[k]) if (h.price>0) pool.push(`hat:${k}:${h.id}`); }
-  for (const [id,v] of Object.entries(THEMES)) if (v.price>0) pool.push('map:'+id);
-  for (const [id,v] of Object.entries(ORBS)) if (v.price>0) pool.push('orb:'+id);
+  const pool=buyablePool();
   const r=rng(d*31337+1), keys=[]; while (keys.length<4 && pool.length) keys.push(pool.splice((r()*pool.length)|0,1)[0]);
   return (dealMemo={d, keys}).keys;
 }
@@ -2578,23 +2691,14 @@ function renderToday(){
   $('questList').innerHTML = q.map((it,i) => { const Q=QUESTS[it.id], d=qDone(it);
     return `<div class="quest ${d?'done':''}"><span class="qt">${Q.text(it)}</span>${it.claimed?'<span class="meta">Claimed</span>':d?`<button type="button" class="btn primary" data-quest="${i}">+${Q.gems} gems</button>`:`<span class="meta">${it.prog}/${Q.n}</span>`}<div class="qbar"><i style="width:${it.prog/Q.n*100}%"></i></div></div>`; }).join('')
     + `<p class="meta" style="margin:0">${profile.daily.bonus?'Bonus claimed. New quests tomorrow.':q.every(it=>it.claimed)?'':`Finish all three for a bonus ${QUEST_BONUS} gems. Each quest also gives 25 pass XP.`}</p>`;
-  const wi=weeklyInfo(), ws=weeklyState(), L=LEVELS.find(x=>x.id===wi.map);
-  $('weeklyBox').innerHTML = `<canvas class="wk-map" width="384" height="200" aria-hidden="true"></canvas><div><b>${L.name}</b> <span class="meta">· Normal · ends in ${untilText(msToMonday())}</span></div><div class="mods">${wi.mods.map(m=>`<span class="mod" title="${m.desc}">${m.name}: ${m.desc}</span>`).join('')}</div>
-    <div class="meta">Your best this week: <b style="color:var(--ink)">wave ${ws.best}</b></div>
-    <div class="wms">${W_MS.map((m,i)=>{ const got=ws.claimed.includes(i), ok=ws.best>=m.wave; return `<div class="sday ${got?'done':ok?'now':''}"><b>Wave ${m.wave}</b><span>${m.gems} gems</span>${ok&&!got?`<button type="button" class="btn primary" data-wms="${i}">Claim</button>`:''}</div>`; }).join('')}</div>
-    <button type="button" class="btn primary" id="playWeekly">Play the challenge</button><ol class="lb" id="weeklyBoard" hidden></ol>`;
-  drawMini($('weeklyBox').querySelector('canvas'), L.paths || L.path);
-  if (LEADER) LEADER.top(wi.week).then(rows => { const b=$('weeklyBoard'); if (!b || !rows || !rows.length) return; b.hidden=false; b.innerHTML = rows.map(r=>`<li class="${r.me?'me':''}"><span>${r.name}</span><b>wave ${r.wave}</b></li>`).join(''); }).catch(()=>{});
   const n=achReady(); $('homeBook').innerHTML = 'Collection' + (n?`<span class="badge-n">${n}</span>`:'');
 }
 document.addEventListener('click', ev => {
   const t=ev.target.closest && ev.target.closest('button'); if (!t || t.disabled) return;
   if (t.id==='streakClaim') return claimStreak();
-  if (t.id==='playWeekly') return startRun('weekly');
   if (t.dataset.quest!==undefined){ const it=dailyQuests()[+t.dataset.quest]; if (!it || it.claimed || !qDone(it)) return; it.claimed=true; sfx('coin'); addGems(QUESTS[it.id].gems); addPassXP(25); profile.stats.quests=(profile.stats.quests||0)+1;
     if (!profile.daily.bonus && dailyQuests().every(x=>x.claimed)){ profile.daily.bonus=true; addGems(QUEST_BONUS); toast(`All quests done! +${QUEST_BONUS} bonus gems`); }
     saveProfile(); checkAch(); renderToday(); return; }
-  if (t.dataset.wms!==undefined){ const i=+t.dataset.wms, ws=weeklyState(), m=W_MS[i]; if (ws.claimed.includes(i) || ws.best<m.wave) return; ws.claimed.push(i); sfx('coin'); addGems(m.gems); addPassXP(m.xp); saveProfile(); renderToday(); return; }
   if (t.dataset.deal){ const key=t.dataset.deal, cost=Math.round(itemPrice(key)*(1-DEAL_OFF)); if (profile.owned[key] || profile.gems<cost) return; profile.gems-=cost; grantKey(key); sfx('coin'); saveProfile(); checkAch(); toast(`${itemLabel(key)} is yours. Equip it in Cosmetics.`); renderShop(); return; }
   if (t.dataset.bundle){ const b=BUNDLES.find(x=>x.id===t.dataset.bundle), {left, cost}=bundlePrice(b); if (!left.length || profile.gems<cost) return; profile.gems-=cost; left.forEach(grantKey); sfx('coin'); saveProfile(); checkAch(); toast(`${b.name} unlocked: ${left.length} item${left.length>1?'s':''} added. Equip them in Cosmetics.`); renderShop(); return; }
   if (t.dataset.ach){ const a=ACH.find(x=>x.id===t.dataset.ach); if (!a || profile.ach[a.id] || a.cur()<a.need) return; profile.ach[a.id]=1; sfx('coin'); addGems(a.gems); saveProfile(); renderBook(); return; }
@@ -2898,13 +3002,13 @@ function updateXpBar(t){ const f=$('xpFill'), tx=$('xpText'); if (!f) return; co
   const ep=$('evoPick'); if (ep && canEvolve(t)){ const c=evoCost(t), poor=S.berries<c; ep.querySelectorAll('button[data-c]').forEach(b=>{ if (b.disabled!==poor) b.disabled=poor; }); const nd=$('evoNeed'), msg=poor?`You need ${c-Math.floor(S.berries)} more berries.`:''; if (nd && nd.textContent!==msg) nd.textContent=msg; } }
 function syncHUD(){
   const camp=S.mode==='campaign', L=LEVELS[S.level];
-  $('sWave').textContent = camp ? `${S.wave}/${L.waves}` : S.wave; $('sLives').textContent=S.lives; $('sBerries').textContent=Math.floor(S.berries);
+  $('sWave').textContent = camp ? `${S.wave}/${L.waves}` : S.boss ? `${S.wave}/5` : S.wave; $('sLives').textContent=S.lives; $('sBerries').textContent=Math.floor(S.berries);
   const duel=S.mode==='duel', rvd=duel?rivalDuel():null;
   $('sBestLbl').textContent = duel ? 'Rival Grove' : camp ? 'Stars' : 'Best'; $('sBest').textContent = duel ? (rvd && typeof rvd.lives==='number' ? rvd.lives : '–') : camp ? `${profile.stars[L.id]||0}/3` : best;
-  $('modeLbl').textContent = duel ? `1v1 Duel · vs ${rivalName()}` : camp ? `Trail ${S.level+1} of ${LEVELS.length} · ${L.name}` : `Endless · ${LEVELS[endlessLevel()].name}`;
+  $('modeLbl').textContent = duel ? `1v1 Duel · vs ${rivalName()}` : camp ? `Trail ${S.level+1} of ${LEVELS.length} · ${L.name}` : S.boss ? `Boss Drop · ${BOSS_BY[S.boss].name} · ${LEVELS[BOSS_BY[S.boss].map].name}` : `Endless · ${LEVELS[endlessLevel()].name}`;
   const sb=$('startBtn'); sb.disabled = S.phase!=='build'; sb.textContent = S.phase==='wave' ? `Wave ${S.wave} in progress` : `Start wave ${S.wave+1}`;
   const n=S.wave+(S.phase==='wave'?0:1), th=SP[waveTheme(n)];
-  $('nextInfo').innerHTML = S.phase==='wave' ? `<b>${enemies.length+spawnQ.length}</b> wild ones left on the trail` : `Next: mostly <b>${th.names[0]}</b> (${th.type})${isTitan(n)?' with a <b>titan</b>':isAlpha(n)?' with an <b>alpha</b>':''}${n%5===0?' · a <b>rare wildling</b> will appear':''}${(()=>{ const nt=Object.values(TRAITS).find(v=>v.from===n); return nt ? ` · new: <b>${nt.name}</b> wild ones` : ''; })()}${camp?` · ${L.waves-S.wave} waves to go`:''}`;
+  $('nextInfo').innerHTML = S.phase==='wave' ? `<b>${enemies.length+spawnQ.length}</b> wild ones left on the trail` : `Next: mostly <b>${th.names[0]}</b> (${th.type})${isTitan(n)?' with a <b>titan</b>':isAlpha(n)?' with an <b>alpha</b>':''}${n%5===0?' · a <b>rare wildling</b> will appear':''}${(()=>{ const nt=Object.values(TRAITS).find(v=>v.from===n); return nt ? ` · new: <b>${nt.name}</b> wild ones` : ''; })()}${camp?` · ${L.waves-S.wave} waves to go`:''}${S.boss?` · the <b>${BOSS_BY[S.boss].name}</b> arrives on wave 5`:''}`;
   $('orbBtn').disabled = S.phase==='over';
   { const sb2=$('saveBtn'), can=S.phase==='build' && (S.wave>0 || S.towers.length); sb2.hidden = S.mode!=='campaign' || S.phase==='over' || S.phase==='won'; const lbl = S.phase==='wave' ? 'Save after this wave' : 'Save & quit'; if (sb2.textContent!==lbl) sb2.textContent=lbl; sb2.disabled=!can; }
   syncParty(); renderTowerPanel(false);
@@ -2926,12 +3030,6 @@ CLOUD.ready = (async () => {
     CLOUD.uid = session.user.id;
     await cloudPull(true);
     CLOUD.status='on'; renderCloudStatus();
-    // Weekly challenge leaderboard (see the seasons_leaderboard migration).
-    LEADER = {
-      submit: (week, wave) => CLOUD.sb.rpc('submit_weekly', { p_week: week, p_wave: wave, p_name: duelName }).then(() => {}, () => {}),
-      top: week => CLOUD.sb.rpc('weekly_top', { p_week: week }).then(r => r.data || []),
-    };
-    if (inHome) renderToday();
     handlePurchaseReturn();
     return true;
   } catch(e) { console.warn('Cloud save unavailable:', e); CLOUD.status='error'; renderCloudStatus(); return false; }
@@ -3242,7 +3340,7 @@ function openTutorial(start=0){
   $('home').hidden=true; $('menu').hidden=true; closeShop(); $('tutorial').hidden=false;
   renderTutorial(); try { window.scrollTo(0,0); } catch(e) {}
 }
-function closeShop(){ for (const id of ['shopPage','bookPage']){ const el=document.getElementById(id); if (el) el.hidden=true; } }
+function closeShop(){ for (const id of ['shopPage','bookPage','bossPage']){ const el=document.getElementById(id); if (el) el.hidden=true; } }
 function closeTutorial(){ closeShop(); const el=document.getElementById('tutorial'); if (el && !el.hidden){ el.hidden=true; document.body.classList.remove('in-tut'); } }
 $('homeTut').addEventListener('click', () => openTutorial(0));
 $('homeTut2').addEventListener('click', () => openTutorial(0));

@@ -45,7 +45,7 @@ npx supabase db push
 
 (Or paste each SQL file in `supabase/migrations`, oldest first, into **SQL Editor → New query** and run it.)
 
-The second migration adds one premium Trail Pass per season and the weekly challenge leaderboard. If you already
+The second migration adds one premium Trail Pass per season. If you already
 ran the first one, `npx supabase db push` applies only the new file. Season passes need no new Stripe price:
 every season's pass uses `STRIPE_PRICE_PREMIUM`. After pulling this change, redeploy both functions
 (`npx supabase functions deploy create-checkout` and `npx supabase functions deploy stripe-webhook --no-verify-jwt`).
@@ -136,11 +136,6 @@ Note your site's address (for example `https://wildling-watch.netlify.app`); Str
   player can edit their own save. Bought gems and premium are recorded on the server and can't be
   forged. Duel results are reported by each player's game, which is fine for casual play but not
   for prize tournaments.
-- **Weekly leaderboard** scores are also sent by the player's game. The database only accepts the
-  current week and a sane wave number, but a determined player could still post a fake score. Don't
-  attach real prizes to it, and remove obviously fake rows from the `weekly_scores` table if needed.
-- Leaderboard names come from the 1v1 duel name players type in. The database strips symbols and
-  limits names to 16 characters, but it doesn't filter words. Check the table now and then.
 - **Seasons:** a new season starts on the date in `SEASONS` in the game code. Add the next season's
   rewards there before the current one ends.
 - Guest accounts live in one browser. If a player clears their site data, they get a new guest
