@@ -5,7 +5,8 @@ creates a guest account for them automatically.
 
 | File | What it is |
 |---|---|
-| `index.html` | The whole game (12 campaign trails, 4 with branching routes) |
+| `index.html` | Website landing page (features, prices, support) |
+| `play/index.html` | The whole game (12 campaign trails, 4 with branching routes) |
 | `config.js` | Your public Supabase settings and the payments switch |
 | `supabase/migrations/…_init.sql` | Database tables and security rules |
 | `supabase/functions/create-checkout` | Starts a Stripe checkout for a gem pack or the premium pass |

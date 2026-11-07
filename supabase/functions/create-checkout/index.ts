@@ -54,8 +54,8 @@ Deno.serve(async (req) => {
       line_items: [{ price, quantity: 1 }],
       client_reference_id: user.id,
       metadata: { pack: String(pack), user_id: user.id },
-      success_url: `${SITE_URL}/?purchase=success`,
-      cancel_url: `${SITE_URL}/?purchase=cancelled`,
+      success_url: `${SITE_URL}/play/?purchase=success`,
+      cancel_url: `${SITE_URL}/play/?purchase=cancelled`,
     });
     return json({ url: session.url });
   } catch (err) {
