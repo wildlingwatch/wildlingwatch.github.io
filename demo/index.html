@@ -300,6 +300,17 @@ kbd{font-family:var(--f-data);font-size:10px;background:var(--panel2);border:1px
 .demo-note .btn{text-decoration:none}
 .demo-note.big{margin:0 0 14px}
 .demo-lock{color:var(--sun)}
+.lock-chip{display:inline-flex;align-items:center;gap:5px;font-family:var(--f-data);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#221a00;background:var(--sun);border-radius:999px;padding:3px 9px}
+.lock-chip svg{width:12px;height:12px;fill:none;stroke:#221a00;stroke-width:2.4}
+.el-prev{position:relative;margin:0 0 12px;border-radius:8px;overflow:hidden}
+.el-prev canvas{display:block;width:100%;height:auto;filter:saturate(.55) brightness(.6)}
+.el-ov{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:2px;text-align:center}
+.el-ov b{font-family:var(--f-display);font-weight:400;font-size:54px;line-height:1;color:var(--sun);text-shadow:0 3px 14px rgba(0,0,0,.6)}
+.el-ov span{font-family:var(--f-display);font-size:18px;color:var(--ink);text-shadow:0 2px 10px rgba(0,0,0,.7)}
+.endless-locked{border-color:rgba(255,201,74,.45)}
+.endless-locked.flash{animation:elflash 1.2s ease}
+@keyframes elflash{0%,100%{box-shadow:none}30%{box-shadow:0 0 0 3px var(--sun),0 0 30px rgba(255,201,74,.35)}}
+@media (prefers-reduced-motion: reduce){.endless-locked.flash{animation:none}}
 .menu-head .starbank .btn{margin-left:8px;vertical-align:middle}
 .menu-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px}
 .mh{font-family:var(--f-display);font-weight:400;font-size:22px;margin:0;color:var(--ink)}
@@ -490,7 +501,7 @@ body.in-lobby .main, body.in-lobby .stats, body.in-lobby header .diffrow{display
         <p class="lede">Station elemental wildlings along winding trails, catch the wild ones that wander in, and evolve your team down utility or damage paths. Clear the campaign, then see how long you last in Endless.</p>
         <div class="row hero-cta">
           <button class="btn primary big" id="homePlay" type="button">Play</button>
-          <button class="btn big" id="homeEndless" type="button">Quick Endless</button>
+          <button class="btn big" id="homeEndless" type="button">Endless · full game</button>
           <button class="btn big" id="homeCosmetics" type="button">Cosmetics</button>
           <button class="btn big" id="homePass" type="button">Trail Pass</button>
           <button class="btn big" id="homeDuel" type="button" hidden>1v1 Duel</button>
@@ -593,13 +604,12 @@ body.in-lobby .main, body.in-lobby .stats, body.in-lobby header .diffrow{display
       <div class="saves" id="saves"></div>
     </div>
     <div class="mgrid">
-      <div class="card endless-card">
-        <h2>Endless</h2>
-        <p class="empty">The waves never stop. Pick any trail from the campaign and see how long you can hold it. Your best wave is kept for each trail and difficulty. Endless runs are not saved, so play them in one sitting.</p>
-        <label class="fld" for="endlessMap">Trail<select id="endlessMap"></select></label>
-        <canvas id="endlessPreview" width="384" height="240" aria-hidden="true"></canvas>
-        <dl class="kv" id="endlessBests"></dl>
-        <button class="btn primary" id="playEndless" type="button">Play Endless</button>
+      <div class="card endless-card endless-locked" id="endlessCard">
+        <div class="up-head"><h2>Endless</h2><span class="lock-chip"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Full game</span></div>
+        <div class="el-prev"><canvas id="endlessPreview" width="384" height="240" aria-hidden="true"></canvas><div class="el-ov"><b>∞</b><span>Endless mode</span></div></div>
+        <p class="empty">How long can you hold the trail? The waves never stop, a titan arrives every 10th wave, and your best wave is kept for every trail and difficulty. Endless is part of the full game.</p>
+        <div id="demoEndless"></div>
+        <div hidden><select id="endlessMap"></select><dl id="endlessBests"></dl><button id="playEndless" type="button">Play Endless</button></div>
       </div>
       <div class="card">
         <div class="up-head"><h2>Campaign</h2><div class="seg camp-diff" id="campDiff" role="group" aria-label="Campaign difficulty"></div></div>
@@ -787,7 +797,7 @@ body.in-lobby .main, body.in-lobby .stats, body.in-lobby header .diffrow{display
 <script>
 (() => {
 // ===== DEMO BUILD =====
-const DEMO_TRAILS = 4, DEMO_ENDLESS = 2, FULL_GAME_URL = '';
+const DEMO_TRAILS = 4, DEMO_ENDLESS = 1, FULL_GAME_URL = '';
 const fullLink = (label='Get the full game') => FULL_GAME_URL ? `<a class="btn primary" href="${FULL_GAME_URL}" target="_blank" rel="noopener">${label}</a>` : `<span class="meta">The full game is coming soon.</span>`;
 const TAU = Math.PI * 2, COLS = 16, ROWS = 10, T = 48, W = COLS * T, H = ROWS * T;
 const MAXLV = 20, ORB_COST = 25;
@@ -2262,7 +2272,7 @@ let heroT=0; const heroSeg=[]; let heroTot=0;
 { const pts=HERO_WP.map(([c,r])=>[(c+.5)*T,(r+.5)*T]); for (let i=0;i<pts.length-1;i++){ const a=pts[i], q=pts[i+1], L=Math.hypot(q[0]-a[0],q[1]-a[1]); heroSeg.push({a,q,L,s:heroTot}); heroTot+=L; } }
 const heroAt=d=>{ for (const g of heroSeg) if (d<=g.s+g.L){ const k=(d-g.s)/g.L; return [g.a[0]+(g.q[0]-g.a[0])*k, g.a[1]+(g.q[1]-g.a[1])*k]; } const g=heroSeg[heroSeg.length-1]; return [g.q[0],g.q[1]]; };
 function renderHome(){
-  $('demoHome').innerHTML = `<p>You're playing the <b>free demo</b>: the first 4 trails, 2 Endless maps and the Thorn King boss. The full game adds 8 more trails, 1v1 duels with friends, two more bosses and the premium Trail Pass.</p>${fullLink()}`;
+  $('demoHome').innerHTML = `<p>You're playing the <b>free demo</b>: the first 4 trails on every difficulty and the Thorn King boss. The full game adds <b>Endless mode</b>, 8 more trails, 1v1 duels with friends, two more bosses and the premium Trail Pass.</p>${fullLink()}`;
   paintScene(heroBg, HERO_WP, profile.equip.map, 3);
   let bestAny=0; for (const k of Object.keys(DIFF)) for (const Lv of LEVELS){ try { bestAny=Math.max(bestAny, +localStorage.getItem(bestKey(k, Lv.id))||0); } catch(e) {} }
   const cleared=LEVELS.filter(clearedAny).length;
@@ -2289,7 +2299,7 @@ function renderHero(dt){
   ambient(hctx, heroT);
 }
 $('homePlay').addEventListener('click', openMenu);
-$('homeEndless').addEventListener('click', () => startRun('endless'));
+$('homeEndless').addEventListener('click', () => showEndlessLock());
 function openShop(target){
   hideTip(); leaveLobbyScreen(); closeTutorial(); inHome=false; inMenu=true;
   document.body.classList.remove('in-home','in-game'); document.body.classList.add('in-menu');
@@ -2365,7 +2375,13 @@ $('saves').addEventListener('click', ev => {
 });
 $('saveBtn').addEventListener('click', () => { if (saveRun()) openMenu(); });
 $('endlessMap').addEventListener('change', e => { endlessMap=e.target.value; try { localStorage.setItem('wildling-demo-endless-map', endlessMap); } catch(err) {} renderMenu(); });
+function showEndlessLock(){
+  openMenu(); const c=$('endlessCard'); if (!c) return;
+  try { c.scrollIntoView({block:'center'}); } catch(e) {}
+  c.classList.remove('flash'); void c.offsetWidth; c.classList.add('flash');
+}
 function startRun(m, li=0){
+  if (m==='endless'){ showEndlessLock(); return; }
   bossRun = m==='boss' ? BOSSES[li] : null; if (m==='boss'){ m='endless'; li=0; }
   const ended=useTrials(); mode=m; levelIdx=li; closeMenu(); reset();
   if (bossRun){ toast(`Boss Drop: hold ${LEVELS[bossRun.map].name} for 4 waves, then defeat the ${bossRun.name} on wave 5`); return; }
@@ -2374,6 +2390,7 @@ function startRun(m, li=0){
 }
 function drawMini(cn, wp, themeId){ paintScene(cn, wp, themeId||profile.equip.map, 7); }
 function renderMenu(){
+  $('demoEndless').innerHTML = fullLink('Play Endless in the full game');
   $('demoCamp').innerHTML = `<p>The demo includes trails 1 to ${DEMO_TRAILS} on every difficulty. Campaign badges need all ${LEVELS.length} trails, which come with the full game.</p>${fullLink('Unlock all trails')}`;
   $('demoShop').innerHTML = `<p><b>Gem packs and the premium Trail Pass are in the full game.</b> In the demo, earn gems by clearing waves and trails, beating the Thorn King and claiming achievements.</p>${fullLink()}`;
   const earned=starsEarned(), bank=earned-starsSpent();
@@ -2509,8 +2526,6 @@ const ACH = [
   {id:'campH', g:'camp', medal:'#ffc94a', name:'Hard Campaign', desc:`Clear all ${LEVELS.length} trails on Hard. Unlocks a Gold Crown for every wildling and the Champion's Summit map`, cur:()=>clearedOn('hard'), need:LEVELS.length, gems:150, items:[...ORDER.map(k=>`hat:${k}:goldcrown`), 'map:summit']},
   {id:'stars', g:'camp', medal:'#ff9a3c', name:'Star Collector', desc:`Earn all ${LEVELS.length*9} stars across every difficulty`, cur:()=>starsEarned(), need:LEVELS.length*9, gems:150},
   {id:'trails6', g:'ach', name:'Trailblazer', desc:'Clear 6 campaign trails', cur:trailsN, need:6, gems:30},
-  {id:'wave25', g:'ach', name:'Holding Strong', desc:'Reach wave 25 in Endless', cur:()=>profile.stats.bestWave||0, need:25, gems:30},
-  {id:'wave50', g:'ach', name:'Unbreakable', desc:'Reach wave 50 in Endless', cur:()=>profile.stats.bestWave||0, need:50, gems:80},
   {id:'ko1k', g:'ach', name:'Busy Trail', desc:'Knock out 1,000 wild ones', cur:()=>profile.stats.kos||0, need:1000, gems:30},
   {id:'ko10k', g:'ach', name:'Legendary Defender', desc:'Knock out 10,000 wild ones', cur:()=>profile.stats.kos||0, need:10000, gems:100},
   {id:'titan1', g:'ach', name:'Giant Slayer', desc:'Defeat or catch a titan', cur:()=>profile.stats.titans||0, need:1, gems:30},
@@ -2972,7 +2987,7 @@ function syncHUD(){
   $('sWave').textContent = camp ? `${S.wave}/${L.waves}` : S.boss ? `${S.wave}/5` : S.wave; $('sLives').textContent=S.lives; $('sBerries').textContent=Math.floor(S.berries);
   const duel=S.mode==='duel', rvd=duel?rivalDuel():null;
   $('sBestLbl').textContent = duel ? 'Rival Grove' : camp ? 'Stars' : 'Best'; $('sBest').textContent = duel ? (rvd && typeof rvd.lives==='number' ? rvd.lives : '–') : camp ? `${SD(S.diff)[L.id]||0}/3` : best;
-  $('modeLbl').textContent = duel ? `1v1 Duel · vs ${rivalName()}` : camp ? `Trail ${S.level+1} of ${LEVELS.length} · ${L.name}` : S.boss ? `Boss Drop · ${BOSS_BY[S.boss].name} · ${LEVELS[BOSS_BY[S.boss].map].name}` : `Endless · ${LEVELS[endlessLevel()].name}`;
+  $('modeLbl').textContent = duel ? `1v1 Duel · vs ${rivalName()}` : camp ? `Trail ${S.level+1} of ${LEVELS.length} · ${L.name}` : S.boss ? `Boss Drop · ${BOSS_BY[S.boss].name} · ${LEVELS[BOSS_BY[S.boss].map].name}` : 'Free demo';
   const sb=$('startBtn'); sb.disabled = S.phase!=='build'; sb.textContent = S.phase==='wave' ? `Wave ${S.wave} in progress` : `Start wave ${S.wave+1}`;
   const n=S.wave+(S.phase==='wave'?0:1), th=SP[waveTheme(n)];
   $('nextInfo').innerHTML = S.phase==='wave' ? `<b>${enemies.length+spawnQ.length}</b> wild ones left on the trail` : `Next: mostly <b>${th.names[0]}</b> (${th.type})${isTitan(n)?' with a <b>titan</b>':isAlpha(n)?' with an <b>alpha</b>':''}${n%5===0?' · a <b>rare wildling</b> will appear':''}${(()=>{ const nt=Object.values(TRAITS).find(v=>v.from===n); return nt ? ` · new: <b>${nt.name}</b> wild ones` : ''; })()}${camp?` · ${L.waves-S.wave} waves to go`:''}${S.boss?` · the <b>${BOSS_BY[S.boss].name}</b> arrives on wave 5`:''}`;
