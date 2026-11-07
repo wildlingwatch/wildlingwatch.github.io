@@ -1,10 +1,10 @@
 // Receives Stripe's "payment completed" events and grants the purchase on the player's account.
 // Deploy with --no-verify-jwt: Stripe calls it directly and is verified by its signature instead.
-import Stripe from "npm:stripe@14.25.0";
+import Stripe from "npm:stripe@18.0.0";
 import { createClient } from "npm:@supabase/supabase-js@2.45.4";
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") ?? "", {
-  apiVersion: "2024-06-20",
+  apiVersion: "2025-03-31.basil",
   httpClient: Stripe.createFetchHttpClient(),
 });
 const cryptoProvider = Stripe.createSubtleCryptoProvider();

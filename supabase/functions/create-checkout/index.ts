@@ -1,10 +1,10 @@
 // Starts a Stripe Checkout session for the signed-in (guest) player.
 // The client sends only a pack id; prices come from server-side secrets, never from the browser.
-import Stripe from "npm:stripe@14.25.0";
+import Stripe from "npm:stripe@18.0.0";
 import { createClient } from "npm:@supabase/supabase-js@2.45.4";
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") ?? "", {
-  apiVersion: "2024-06-20",
+  apiVersion: "2025-03-31.basil",
   httpClient: Stripe.createFetchHttpClient(),
 });
 
