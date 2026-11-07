@@ -158,6 +158,8 @@ kbd{font-family:var(--f-data);font-size:10px;background:var(--panel2);border:1px
 .seg button.on{background:var(--sun);color:#221a00}
 .seg button[data-k="easy"].on{background:var(--grass);color:#0e1f0b}
 .seg button[data-k="hard"].on{background:var(--berry);color:#fff}
+.seg button[data-cd="easy"].on{background:var(--grass);color:#0e1f0b}
+.seg button[data-cd="hard"].on{background:var(--berry);color:#fff}
 .seg button:focus-visible{outline:2px solid var(--sun);outline-offset:1px}
 .seg.full{display:flex;width:100%}
 .seg.full button{flex:1 1 auto;padding:6px 4px}
@@ -290,6 +292,8 @@ kbd{font-family:var(--f-data);font-size:10px;background:var(--panel2);border:1px
 .odds dd{margin:0;font-family:var(--f-data)}
 .odds p{margin:0;font-size:12px}
 #chestCv{display:block;width:min(360px,100%);height:auto;margin:4px auto}
+.camp-diff button{display:inline-flex;gap:6px;align-items:baseline}
+.cd-st{font-family:var(--f-data);font-size:10px;opacity:.85}
 .menu-head .starbank .btn{margin-left:8px;vertical-align:middle}
 .menu-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px}
 .mh{font-family:var(--f-display);font-weight:400;font-size:22px;margin:0;color:var(--ink)}
@@ -595,8 +599,8 @@ body.in-lobby .main, body.in-lobby .stats, body.in-lobby header .diffrow{display
         <button class="btn primary" id="playEndless" type="button">Play Endless</button>
       </div>
       <div class="card">
-        <h2>Campaign</h2>
-        <p class="empty">Clear each trail to open the next. Clearing earns 1 star, keeping half the Grove earns 2, and keeping 85% earns 3.</p>
+        <div class="up-head"><h2>Campaign</h2><div class="seg camp-diff" id="campDiff" role="group" aria-label="Campaign difficulty"></div></div>
+        <p class="empty">Easy, Normal and Hard are three separate campaigns, each with its own unlocks and stars. Clearing a trail earns 1 star, keeping half the Grove earns 2, and keeping 85% earns 3. Clear a whole campaign for a badge and rewards.</p>
         <div class="levels" id="levels"></div>
       </div>
     </div>
@@ -662,6 +666,10 @@ body.in-lobby .main, body.in-lobby .stats, body.in-lobby header .diffrow{display
       <div class="up-head"><h2>Wildling book</h2><span class="meta" id="dexCount"></span></div>
       <p class="empty">Every species you catch is recorded here, along with the highest form you have evolved it to and any shiny you have caught.</p>
       <div class="dex" id="dexGrid"></div>
+    </div>
+    <div class="card">
+      <div class="up-head"><h2>Campaign badges</h2></div>
+      <div class="achs" id="campList"></div>
     </div>
     <div class="card">
       <div class="up-head"><h2>Collection milestones</h2></div>
@@ -906,9 +914,12 @@ const UPG = [
 let profile = {stars:{}, up:{}, gems:50, owned:{}, saves:{}, v:2, trials:{}, offers:{}, pass:{xp:0, claimed:[], claimedP:[], premium:false, track:3}, equip:{skin:{}, hat:{}, map:'meadow', orb:'seed'}};
 try { const pr = JSON.parse(localStorage.getItem('wildling-profile')); if (pr && typeof pr==='object') profile = {stars:pr.stars||{}, up:pr.up||{}, gems: typeof pr.gems==='number' ? pr.gems : 50, owned:pr.owned||{}, saves:(pr.saves && typeof pr.saves==='object') ? pr.saves : {}, v:pr.v||0, trials:pr.trials||{}, offers:pr.offers||{}, pass:{xp:0, claimed:[], ...(pr.pass||{})}, equip:{skin:{}, hat:{}, map:'meadow', orb:'seed', ...(pr.equip||{})}}; } catch(e) {}
 if (profile.saves && profile.saves.endless) delete profile.saves.endless;
-try { const pr2 = JSON.parse(localStorage.getItem('wildling-profile')) || {}; for (const k of ['stats','dex','ach','achSeen']) if (pr2[k] && typeof pr2[k]==='object') profile[k]=pr2[k]; } catch(e) {}
+try { const pr2 = JSON.parse(localStorage.getItem('wildling-profile')) || {}; for (const k of ['stats','dex','ach','achSeen','starsD']) if (pr2[k] && typeof pr2[k]==='object') profile[k]=pr2[k]; } catch(e) {}
 profile.stats = profile.stats || {};
 profile.dex = {caught:{}, stage:{}, shiny:{}, ...(profile.dex||{})};
+// Each difficulty is its own campaign. Stars earned before this change count toward Normal.
+if (!profile.starsD) profile.starsD = {easy:{}, normal:{...(profile.stars||{})}, hard:{}};
+for (const d of ['easy','normal','hard']) profile.starsD[d] = profile.starsD[d] || {};
 profile.ach = profile.ach || {}; profile.achSeen = profile.achSeen || {};
 // ---- calendar helpers (local time) ----
 function dayKey(d){ d=d||new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
@@ -1038,6 +1049,10 @@ SKINS_BY.ember.push({id:'magmaw', name:'Magmaw', reward:'Boss Drop · Magmaw', r
 HATS_BY.sprout.push({id:'thorncrown', kind:'crown', cols:['#5a3a1a','#d23b4a'], name:'Thorn Crown', reward:'Boss Drop · Thorn King', rewardBtn:'Boss Drop only', desc:'Woven from the Thorn King\'s brambles'});
 HATS_BY.volt.push({id:'stormhorns', kind:'horns', cols:['#9fd0ff'], name:'Storm Horns', reward:'Boss Drop · Storm Wyrm', rewardBtn:'Boss Drop only', desc:'They hum before a storm'});
 HATS_BY.ember.push({id:'magmacrown', kind:'crown', cols:['#2a1a12','#ff5a1f'], name:'Magma Crown', reward:'Boss Drop · Magmaw', rewardBtn:'Boss Drop only', desc:'Still warm to the touch'});
+for (const k of ORDER){
+  HATS_BY[k].push({id:'silvercrown', kind:'crown', cols:['#dfe6ef','#7fb8ff'], name:'Silver Crown', reward:'Normal campaign reward', rewardBtn:'Clear Normal campaign', desc:'For clearing every trail on Normal'});
+  HATS_BY[k].push({id:'goldcrown', kind:'crown', cols:['#ffd84a','#ff4a5a'], name:'Gold Crown', reward:'Hard campaign reward', rewardBtn:'Clear Hard campaign', desc:'For clearing every trail on Hard'});
+}
 // Shiny colorways: never sold, only unlocked by catching a shiny wild one.
 const SHINY_SHIFT = {ember:200, tide:140, sprout:-90, volt:150, pebble:180, gust:120, lumi:-60, gloom:150, rime:-150};
 for (const k of ORDER){
@@ -1126,6 +1141,7 @@ if ((profile.pass.season||1)!==SEASON.id){ profile.pass={xp:0, claimed:[], claim
 function passWhere(key){ for (const s of SEASONS){ let i=s.free.findIndex(r=>r.key===key); if (i>=0) return {tier:i+1, prem:false, season:s.id}; i=s.prem.findIndex(r=>r.key===key); if (i>=0) return {tier:i+1, prem:true, season:s.id}; } return null; }
 
 const THEMES = {
+  summit:{name:"Champion's Summit", reward:'Hard campaign reward', rewardBtn:'Clear Hard campaign', desc:'Golden peaks for those who cleared every Hard trail', base:'#6a6a3a', tones:['#5e5e32','#767640','#6a5a34'], tuft:['#4e4e28','#9a9a50'], edge:'#4a3a1a', fill:'#c9a45a', tex:['#b08a48','#e0bf72'], stones:'#d8c38a', small:['pebbles','tallgrass','icecrystal'], medium:['rock','pine','crystal','rock'], den:['#4a3a1a','#140e04','#c9a43a'], tint:'rgba(255,190,60,.12)', vig:.34, amb:'fireflies'},
   polar:{name:'Polar Night', pass:true, desc:'Blue snowfields under a quiet moon', base:'#b9cbe0', tones:['#aec2da','#c6d6e8','#a7bcd4'], tuft:['#95aac4','#e8f0fa'], edge:'#5a6f8a', fill:'#8aa2bf', tex:['#7a93b2','#a9bfd8'], small:['snowlump','icecrystal','pebbles'], medium:['pine','pine','snowman','pine'], den:['#3a4a64','#0e1624','#2f5a74'], tint:'rgba(40,70,160,.2)', moon:true, vig:.36, amb:'snow'},
   aurorapeak:{name:'Aurora Peaks', pass:true, desc:'Northern lights over frozen pines', base:'#2a4a52', tones:['#26434b','#30545c','#2a4a5a'], tuft:['#1e3a42','#3f6a70'], edge:'#1c2a30', fill:'#7a96a4', tex:['#6a8694','#8aa6b4'], small:['icecrystal','snowlump','glowshroom'], medium:['pine','crystal','pine','pine'], den:['#1a3038','#050c10','#2f7a6a'], tint:'rgba(60,220,180,.12)', moon:true, vig:.42, amb:'snow'},
   meadow:{name:'Meadow', price:0, desc:'Rolling grass, wildflowers and butterflies', base:'#3f7d3d', tones:['#356f34','#4a8a45','#3a7639'], tuft:['#2d5f2c','#5a9a4f'], edge:'#6f532f', fill:'#c9a46c', tex:['#b38f5a','#dcbc85'], small:['flower','flower','tallgrass','pebbles'], medium:['bush','rock','stump','bush'], den:['#3b2a18','#0c1a0e','#2c5a2a'], amb:'butterflies'},
@@ -1421,7 +1437,11 @@ function ambient(c2, tt){
   ctx.restore();
 }
 function upg(id){ return mode==='duel' ? 0 : (profile.up[id]||0); }
-const starsEarned = () => Object.values(profile.stars).reduce((a,b)=>a+b,0);
+const SD = (d=diff) => profile.starsD[d] || (profile.starsD[d]={});
+const starsEarned = () => ['easy','normal','hard'].reduce((a,d)=>a+Object.values(SD(d)).reduce((x,y)=>x+y,0),0);
+const STAR_MAX = () => LEVELS.length*9;
+const clearedAny = L => ['easy','normal','hard'].some(d=>SD(d)[L.id]);
+const clearedOn = d => LEVELS.filter(L=>SD(d)[L.id]).length;
 const starsSpent = () => UPG.reduce((a,u)=>a+u.cost.slice(0,upg(u.id)).reduce((x,y)=>x+y,0),0);
 const prog = e => e.dist / ((ROUTES[e.route||0]||ROUTES[0]).total || 1);
 function better(m,e,d,b,bd){
@@ -2003,9 +2023,9 @@ function update(dt){
 function winLevel(){
   S.phase='won'; sfx('win'); $('winNext').textContent='Next trail'; clearRunSave();
   const L=LEVELS[S.level], ratio=S.lives/S.startLives, stars = ratio>=.85 ? 3 : ratio>=.5 ? 2 : 1;
-  const prev=profile.stars[L.id]||0; if (stars>prev){ profile.stars[L.id]=stars; saveProfile(); }
+  const prev=SD(S.diff)[L.id]||0; if (stars>prev){ SD(S.diff)[L.id]=stars; saveProfile(); }
   const gained=Math.max(0,stars-prev); addGems(5+10*gained); addPassXP(40+20*gained); track('trails');
-  $('winTitle').textContent = S.level===LEVELS.length-1 ? 'Campaign complete! Every trail is safe.' : `${L.name} cleared`;
+  $('winTitle').textContent = clearedOn(S.diff)===LEVELS.length && !prev ? `${DIFF[S.diff].name} campaign complete!` : `${L.name} cleared on ${DIFF[S.diff].name}`;
   $('winStars').innerHTML = [0,1,2].map(i=>`<span class="${i<stars?'on':''}">★</span>`).join('');
   $('winStars').setAttribute('aria-label', `${stars} of 3 stars`);
   $('winText').textContent = `You kept ${S.lives} of ${S.startLives} Grove. ` + (gained ? `+${gained} new star${gained>1?'s':''} to spend on upgrades.` : 'No new stars this time.') + ` +${5+10*gained} gems.`;
@@ -2205,7 +2225,8 @@ function syncDiffSeg(){
   document.querySelectorAll('#diffSeg button').forEach(b => { const on=b.dataset.k===diff; b.classList.toggle('on',on); b.setAttribute('aria-pressed',on); });
   $('diffNote').textContent = DIFF[diff].note;
 }
-function setDiff(k){ diff=k; try { localStorage.setItem('wildling-diff',k); } catch(e) {} reset(); toast(`New ${DIFF[k].name} run`); }
+function setDiff(k){ diff=k; try { localStorage.setItem('wildling-diff',k); } catch(e) {} reset(); if (inMenu && !$('menu').hidden){ renderMenu(); return; } toast(`New ${DIFF[k].name} run`); }
+$('campDiff').addEventListener('click', ev => { const b=ev.target.closest('button[data-cd]'); if (!b || b.dataset.cd===diff) return; setDiff(b.dataset.cd); });
 $('diffSeg').addEventListener('click', ev => {
   const b = ev.target.closest('button[data-k]'); if (!b) return;
   const k = b.dataset.k;
@@ -2232,8 +2253,8 @@ const heroAt=d=>{ for (const g of heroSeg) if (d<=g.s+g.L){ const k=(d-g.s)/g.L;
 function renderHome(){
   paintScene(heroBg, HERO_WP, profile.equip.map, 3);
   let bestAny=0; for (const k of Object.keys(DIFF)) for (const Lv of LEVELS){ try { bestAny=Math.max(bestAny, +localStorage.getItem(bestKey(k, Lv.id))||0); } catch(e) {} }
-  const cleared=LEVELS.filter(L=>profile.stars[L.id]).length;
-  $('homeStats').innerHTML = [['Stars',`${starsEarned()}/${LEVELS.length*3}`],['Trails',`${cleared}/${LEVELS.length}`],['Best wave',bestAny],['Gems',profile.gems],['Pass tier',`${passTier()}/${PASS.length}`]].map(([l,v])=>`<div class="stat"><span>${l}</span><b>${v}</b></div>`).join('');
+  const cleared=LEVELS.filter(clearedAny).length;
+  $('homeStats').innerHTML = [['Stars',`${starsEarned()}/${STAR_MAX()}`],['Trails',`${cleared}/${LEVELS.length}`],['Best wave',bestAny],['Gems',profile.gems],['Pass tier',`${passTier()}/${PASS.length}`]].map(([l,v])=>`<div class="stat"><span>${l}</span><b>${v}</b></div>`).join('');
   $('homePlay').textContent = (profile.saves && profile.saves.campaign) ? 'Resume a run' : cleared ? 'Continue' : 'Play';
   const unc=unclaimed(); $('homePass').textContent = unc ? `Trail Pass · ${unc} to claim` : 'Trail Pass';
   const rcard = k => { const s=SP[k]; return `<div class="rcard"><canvas width="144" height="144" data-k="${k}" aria-hidden="true"></canvas><div class="un">${s.names[0]}</div><div class="sub">${chip(s.type)}${s.rare?'<span class="meta">rare</span>':''}</div><div class="ud">${s.ability}.${s.rare?' Appears every 5th wave and can only be caught.':''}</div></div>`; };
@@ -2347,8 +2368,10 @@ function renderMenu(){
   if (!esel.options.length) esel.innerHTML = LEVELS.map((Lv,i)=>`<option value="${Lv.id}">${i+1}. ${Lv.name}${Lv.paths?` (${Lv.paths.length} routes)`:''}</option>`).join('');
   esel.value = endlessMap; { const EL=LEVELS[endlessLevel()]; drawMini($('endlessPreview'), EL.paths || EL.path); }
   $('endlessBests').innerHTML = Object.keys(DIFF).map(k => { let b=0; try { b=+localStorage.getItem(bestKey(k))||0; } catch(e) {} return `<dt>${DIFF[k].name}</dt><dd>best wave ${b}</dd>`; }).join('');
+  $('starMax').textContent = STAR_MAX();
+  $('campDiff').innerHTML = Object.keys(DIFF).map(k => { const n=Object.values(SD(k)).reduce((a,b)=>a+b,0); return `<button type="button" data-cd="${k}" class="${k===diff?'on':''}" aria-pressed="${k===diff}">${DIFF[k].name} <span class="cd-st">★ ${n}/${LEVELS.length*3}</span></button>`; }).join('');
   $('levels').innerHTML = LEVELS.map((L,i) => {
-    const st=profile.stars[L.id]||0, open = i===0 || (profile.stars[LEVELS[i-1].id]||0)>0;
+    const SDd=SD(diff), st=SDd[L.id]||0, open = i===0 || (SDd[LEVELS[i-1].id]||0)>0;
     return `<button type="button" class="lvl" data-i="${i}" ${open?'':'disabled'} aria-label="Trail ${i+1}, ${L.name}, ${L.waves} waves, ${st} of 3 stars${open?'':', locked'}"><canvas width="192" height="120"></canvas><span class="ln">${i+1}. ${L.name}</span><span class="lm"><span>${L.waves} waves${L.paths?` · ${L.paths.length} routes`:''}</span><span class="st">${[0,1,2].map(j=>`<span class="${j<st?'on':''}">★</span>`).join('')}</span></span>${open?'':'<span class="meta">Clear the trail before it to open</span>'}</button>`;
   }).join('');
   document.querySelectorAll('#levels canvas').forEach((cn,i) => drawMini(cn, LEVELS[i].paths || LEVELS[i].path));
@@ -2457,7 +2480,7 @@ function track(ev, n=1, info={}){
 }
 // ---- achievements and collection milestones ----
 const ownedCount = () => Object.keys(profile.owned).filter(k=>profile.owned[k]).length;
-const trailsN = () => LEVELS.filter(L=>profile.stars[L.id]).length;
+const trailsN = () => LEVELS.filter(clearedAny).length;
 const ACH = [
   {id:'dex3', g:'col', name:'Field Notes', desc:'Catch 3 different species', cur:()=>Object.keys(profile.dex.caught).length, need:3, gems:20},
   {id:'dex6', g:'col', name:'Naturalist', desc:'Catch 6 different species', cur:()=>Object.keys(profile.dex.caught).length, need:6, gems:40},
@@ -2468,9 +2491,11 @@ const ACH = [
   {id:'shiny3', g:'col', name:'Shiny Hunter', desc:'Catch 3 different shinies', cur:()=>Object.keys(profile.dex.shiny).length, need:3, gems:100},
   {id:'cos10', g:'col', name:'Dressed Up', desc:'Own 10 cosmetics', cur:ownedCount, need:10, gems:30},
   {id:'cos30', g:'col', name:'Wardrobe Keeper', desc:'Own 30 cosmetics', cur:ownedCount, need:30, gems:80},
+  {id:'campE', g:'camp', medal:'#7be08a', name:'Easy Campaign', desc:`Clear all ${LEVELS.length} trails on Easy`, cur:()=>clearedOn('easy'), need:LEVELS.length, gems:50},
+  {id:'campN', g:'camp', medal:'#dfe6ef', name:'Normal Campaign', desc:`Clear all ${LEVELS.length} trails on Normal. Unlocks a Silver Crown for every wildling`, cur:()=>clearedOn('normal'), need:LEVELS.length, gems:80, items:ORDER.map(k=>`hat:${k}:silvercrown`)},
+  {id:'campH', g:'camp', medal:'#ffc94a', name:'Hard Campaign', desc:`Clear all ${LEVELS.length} trails on Hard. Unlocks a Gold Crown for every wildling and the Champion's Summit map`, cur:()=>clearedOn('hard'), need:LEVELS.length, gems:150, items:[...ORDER.map(k=>`hat:${k}:goldcrown`), 'map:summit']},
+  {id:'stars', g:'camp', medal:'#ff9a3c', name:'Star Collector', desc:`Earn all ${LEVELS.length*9} stars across every difficulty`, cur:()=>starsEarned(), need:LEVELS.length*9, gems:150},
   {id:'trails6', g:'ach', name:'Trailblazer', desc:'Clear 6 campaign trails', cur:trailsN, need:6, gems:30},
-  {id:'camp', g:'ach', name:'Every Trail Safe', desc:'Clear every campaign trail', cur:trailsN, need:LEVELS.length, gems:100},
-  {id:'stars', g:'ach', name:'Star Collector', desc:`Earn all ${LEVELS.length*3} stars`, cur:()=>starsEarned(), need:LEVELS.length*3, gems:150},
   {id:'wave25', g:'ach', name:'Holding Strong', desc:'Reach wave 25 in Endless', cur:()=>profile.stats.bestWave||0, need:25, gems:30},
   {id:'wave50', g:'ach', name:'Unbreakable', desc:'Reach wave 50 in Endless', cur:()=>profile.stats.bestWave||0, need:50, gems:80},
   {id:'ko1k', g:'ach', name:'Busy Trail', desc:'Knock out 1,000 wild ones', cur:()=>profile.stats.kos||0, need:1000, gems:30},
@@ -2628,10 +2653,10 @@ document.addEventListener('click', ev => {
   const t=ev.target.closest && ev.target.closest('button'); if (!t || t.disabled) return;
   if (t.dataset.deal){ const key=t.dataset.deal, cost=Math.round(itemPrice(key)*(1-DEAL_OFF)); if (profile.owned[key] || profile.gems<cost) return; profile.gems-=cost; grantKey(key); sfx('coin'); saveProfile(); checkAch(); toast(`${itemLabel(key)} is yours. Equip it in Cosmetics.`); renderShop(); return; }
   if (t.dataset.bundle){ const b=BUNDLES.find(x=>x.id===t.dataset.bundle), {left, cost}=bundlePrice(b); if (!left.length || profile.gems<cost) return; profile.gems-=cost; left.forEach(grantKey); sfx('coin'); saveProfile(); checkAch(); toast(`${b.name} unlocked: ${left.length} item${left.length>1?'s':''} added. Equip them in Cosmetics.`); renderShop(); return; }
-  if (t.dataset.ach){ const a=ACH.find(x=>x.id===t.dataset.ach); if (!a || profile.ach[a.id] || a.cur()<a.need) return; profile.ach[a.id]=1; sfx('coin'); addGems(a.gems); saveProfile(); renderBook(); return; }
+  if (t.dataset.ach){ const a=ACH.find(x=>x.id===t.dataset.ach); if (!a || profile.ach[a.id] || a.cur()<a.need) return; profile.ach[a.id]=1; sfx('coin'); addGems(a.gems); if (a.items){ a.items.forEach(grantKey); toast(`${a.name} rewards unlocked. Equip them in Cosmetics.`); } saveProfile(); renderBook(); return; }
 });
 // ---- collection page ----
-function medal(done, claimed, col){ const c=claimed?(col==='col'?'#7fe0ff':'#ffc94a'):done?'#ffe9a8':'#3a5446'; return `<svg class="medal" viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="19" fill="${c}" stroke="rgba(0,0,0,.35)" stroke-width="2"/><path d="M22 10l3.6 7.4 8.1 1.2-5.9 5.7 1.4 8.1L22 28.6l-7.2 3.8 1.4-8.1-5.9-5.7 8.1-1.2z" fill="${claimed?'#fff':done?'#b8860b':'#253a30'}"/></svg>`; }
+function medal(done, claimed, col){ const c=claimed?(col==='col'?'#7fe0ff':col&&col[0]==='#'?col:'#ffc94a'):done?'#ffe9a8':'#3a5446'; return `<svg class="medal" viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="19" fill="${c}" stroke="rgba(0,0,0,.35)" stroke-width="2"/><path d="M22 10l3.6 7.4 8.1 1.2-5.9 5.7 1.4 8.1L22 28.6l-7.2 3.8 1.4-8.1-5.9-5.7 8.1-1.2z" fill="${claimed?'#fff':done?'#b8860b':'#253a30'}"/></svg>`; }
 function renderBook(){
   const starters={ember:1,tide:1,sprout:1};
   $('dexCount').textContent = `${Object.keys(profile.dex.caught).length} of ${ORDER.length} caught · ${Object.keys(profile.dex.shiny).length} shiny`;
@@ -2640,7 +2665,8 @@ function renderBook(){
     return `<div class="dcard ${c||starters[k]?'':'unk'}"><canvas width="168" height="168" data-k="${k}" data-st="${st}" aria-hidden="true"></canvas><div class="un">${c||starters[k]?s.names[st]:'???'}${sh?' <span title="Shiny caught" style="color:#ffe27a">✦</span>':''}</div><div class="meta">${c?'Caught':starters[k]?'Starter':s.rare?'Rare · catch only':'Not caught yet'}</div><div class="stg" aria-label="Highest form ${st+1} of 4">${[0,1,2,3].map(i=>`<i class="${i<=st&&(c||starters[k]||st)?'on':''}"></i>`).join('')}</div><div class="meta">${own}/${cos.length} cosmetics</div></div>`; }).join('');
   document.querySelectorAll('#dexGrid canvas').forEach(cn => { const k=cn.dataset.k, known=profile.dex.caught[k]||starters[k]; drawPortrait(cn, k, +cn.dataset.st, !known); });
   const row = a => { const cur=Math.min(a.cur(), a.need), done=cur>=a.need, cl=!!profile.ach[a.id];
-    return `<div class="ach ${cl?'cl':done?'done':''}">${medal(done,cl,a.g)}<div class="an">${a.name}</div><div class="ud">${a.desc}</div><div class="arow"><div class="qbar"><i style="width:${cur/a.need*100}%"></i></div>${cl?'<span class="meta">Claimed</span>':done?`<button type="button" class="btn primary" data-ach="${a.id}">Claim ${a.gems} gems</button>`:`<span class="meta">${cur.toLocaleString()}/${a.need.toLocaleString()} · ${a.gems} gems</span>`}</div></div>`; };
+    return `<div class="ach ${cl?'cl':done?'done':''}">${medal(done,cl,a.medal||a.g)}<div class="an">${a.name}</div><div class="ud">${a.desc}</div><div class="arow"><div class="qbar"><i style="width:${cur/a.need*100}%"></i></div>${cl?'<span class="meta">Claimed</span>':done?`<button type="button" class="btn primary" data-ach="${a.id}">Claim ${a.gems} gems${a.items?' + rewards':''}</button>`:`<span class="meta">${cur.toLocaleString()}/${a.need.toLocaleString()} · ${a.gems} gems</span>`}</div></div>`; };
+  $('campList').innerHTML = ACH.filter(a=>a.g==='camp').map(row).join('');
   $('colList').innerHTML = ACH.filter(a=>a.g==='col').map(row).join('');
   $('achList').innerHTML = ACH.filter(a=>a.g==='ach').map(row).join('');
   const done=ACH.filter(a=>profile.ach[a.id]).length; $('achCount').textContent = `${done} of ${ACH.length} claimed`;
@@ -2931,7 +2957,7 @@ function syncHUD(){
   const camp=S.mode==='campaign', L=LEVELS[S.level];
   $('sWave').textContent = camp ? `${S.wave}/${L.waves}` : S.boss ? `${S.wave}/5` : S.wave; $('sLives').textContent=S.lives; $('sBerries').textContent=Math.floor(S.berries);
   const duel=S.mode==='duel', rvd=duel?rivalDuel():null;
-  $('sBestLbl').textContent = duel ? 'Rival Grove' : camp ? 'Stars' : 'Best'; $('sBest').textContent = duel ? (rvd && typeof rvd.lives==='number' ? rvd.lives : '–') : camp ? `${profile.stars[L.id]||0}/3` : best;
+  $('sBestLbl').textContent = duel ? 'Rival Grove' : camp ? 'Stars' : 'Best'; $('sBest').textContent = duel ? (rvd && typeof rvd.lives==='number' ? rvd.lives : '–') : camp ? `${SD(S.diff)[L.id]||0}/3` : best;
   $('modeLbl').textContent = duel ? `1v1 Duel · vs ${rivalName()}` : camp ? `Trail ${S.level+1} of ${LEVELS.length} · ${L.name}` : S.boss ? `Boss Drop · ${BOSS_BY[S.boss].name} · ${LEVELS[BOSS_BY[S.boss].map].name}` : `Endless · ${LEVELS[endlessLevel()].name}`;
   const sb=$('startBtn'); sb.disabled = S.phase!=='build'; sb.textContent = S.phase==='wave' ? `Wave ${S.wave} in progress` : `Start wave ${S.wave+1}`;
   const n=S.wave+(S.phase==='wave'?0:1), th=SP[waveTheme(n)];
