@@ -234,24 +234,9 @@ kbd{font-family:var(--f-data);font-size:10px;background:var(--panel2);border:1px
 @media (max-width:720px){ .phero{grid-template-columns:1fr} #passHero{order:-1;max-width:420px;margin:0 auto} .ph-list{grid-template-columns:1fr} }
 @media (prefers-reduced-motion: reduce){ .ph-cta .btn.primary::after{animation:none} .pack{transition:none} .pack:hover{transform:none} }
 /* ---- live systems ---- */
-.today .tgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:14px}
-.tbox{background:var(--panel2);border-radius:10px;padding:12px;min-width:0;display:grid;gap:10px;align-content:start}
-.home .tbox h3{margin:0}
-.streak{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
-.sday{border:1px solid var(--line);border-radius:8px;padding:6px 3px;text-align:center;font-size:11px;line-height:1.3;color:var(--muted);display:grid;gap:3px;min-width:0;background:var(--panel)}
-.sday b{font-family:var(--f-data);font-weight:400;font-size:10px;letter-spacing:.06em;color:var(--ink)}
-.sday.done{background:rgba(123,224,138,.12);border-color:rgba(123,224,138,.5)}
-.sday.done span::before{content:"✓ ";color:var(--grass)}
-.sday.now{border-color:var(--sun);box-shadow:0 0 0 1px var(--sun) inset;color:var(--ink)}
-.sday.big{background:linear-gradient(160deg,#3a3320,var(--panel))}
-.sday .btn{padding:4px 6px;font-size:12px}
-.quests{display:grid;gap:8px}
-.quest{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 10px;align-items:center;background:var(--panel);border-radius:8px;padding:8px 10px}
-.quest .qt{font-size:13px;line-height:1.35}
-.quest .btn{padding:5px 10px;font-size:13px}
 .qbar{grid-column:1/-1;height:6px;background:var(--line);border-radius:3px;overflow:hidden;min-width:0}
 .qbar i{display:block;height:100%;background:var(--grass);border-radius:3px}
-.quest.done .qbar i,.ach.done .qbar i,.ach.cl .qbar i{background:var(--sun)}
+.ach.done .qbar i,.ach.cl .qbar i{background:var(--sun)}
 .wbox{display:grid;gap:8px}
 .badge-n{display:inline-grid;place-items:center;min-width:20px;height:20px;border-radius:10px;background:var(--berry);color:#fff;font-size:12px;margin-left:8px;padding:0 6px;font-family:var(--f-data)}
 .dex{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
@@ -510,13 +495,6 @@ body.in-lobby .main, body.in-lobby .stats, body.in-lobby header .diffrow{display
         <p class="meta" id="cloudStatus" style="margin:10px 0 0"></p>
       </div>
       <canvas id="heroCv" aria-label="Wildlings defending a trail"></canvas>
-    </div>
-    <div class="card today" id="todayCard">
-      <div class="up-head"><h2>Today</h2><span class="meta" id="todayReset"></span></div>
-      <div class="tgrid">
-        <div class="tbox"><h3>Login streak</h3><div class="streak" id="streakRow"></div><div id="streakAct"></div></div>
-        <div class="tbox"><h3>Daily quests</h3><div class="quests" id="questList"></div></div>
-      </div>
     </div>
     <div class="card">
       <div class="up-head"><h2>How to play</h2><button class="btn" id="homeTut2" type="button">Full tutorial</button></div>
@@ -928,9 +906,7 @@ const UPG = [
 let profile = {stars:{}, up:{}, gems:50, owned:{}, saves:{}, v:2, trials:{}, offers:{}, pass:{xp:0, claimed:[], claimedP:[], premium:false, track:3}, equip:{skin:{}, hat:{}, map:'meadow', orb:'seed'}};
 try { const pr = JSON.parse(localStorage.getItem('wildling-profile')); if (pr && typeof pr==='object') profile = {stars:pr.stars||{}, up:pr.up||{}, gems: typeof pr.gems==='number' ? pr.gems : 50, owned:pr.owned||{}, saves:(pr.saves && typeof pr.saves==='object') ? pr.saves : {}, v:pr.v||0, trials:pr.trials||{}, offers:pr.offers||{}, pass:{xp:0, claimed:[], ...(pr.pass||{})}, equip:{skin:{}, hat:{}, map:'meadow', orb:'seed', ...(pr.equip||{})}}; } catch(e) {}
 if (profile.saves && profile.saves.endless) delete profile.saves.endless;
-try { const pr2 = JSON.parse(localStorage.getItem('wildling-profile')) || {}; for (const k of ['daily','streak','stats','dex','ach','achSeen']) if (pr2[k] && typeof pr2[k]==='object') profile[k]=pr2[k]; } catch(e) {}
-profile.daily = profile.daily || {day:0, q:[], bonus:false};
-profile.streak = profile.streak || {last:0, count:0, claimed:true};
+try { const pr2 = JSON.parse(localStorage.getItem('wildling-profile')) || {}; for (const k of ['stats','dex','ach','achSeen']) if (pr2[k] && typeof pr2[k]==='object') profile[k]=pr2[k]; } catch(e) {}
 profile.stats = profile.stats || {};
 profile.dex = {caught:{}, stage:{}, shiny:{}, ...(profile.dex||{})};
 profile.ach = profile.ach || {}; profile.achSeen = profile.achSeen || {};
@@ -1167,7 +1143,6 @@ const THEMES = {
 const ORBS = {
   snowball:{name:'Snowball Pod', pass:true, desc:'Packed snow with a red button', top:'#ffffff', bot:'#dfeaf4', band:'#8aa0b4', btn:'#d23b4a'},
   frost:{name:'Frost Pod', pass:true, desc:'Clear ice around a pale glow', top:'#7fd0ff', bot:'#f0faff', band:'#1a3a5a', btn:'#ffffff'},
-  streak:{name:'Streak Pod', reward:'7-day login streak', desc:'Earned by playing seven days in a row', top:'#ff8a3a', bot:'#ffe0a0', band:'#5a2a0a', btn:'#ffd84a'},
   seed:{name:'Seed Pod', price:0, desc:'The standard catching pod', top:'#6b8f3a', bot:'#e8d9a8', band:'#3a2a14', btn:'#ffd84a'},
   ember:{name:'Ember Pod', price:60, desc:'Glows like hot coals', top:'#c2401f', bot:'#ffb36b', band:'#3a140a', btn:'#ffe27a'},
   bubble:{name:'Bubble Pod', price:60, desc:'Sea blue with a pearl center', top:'#2a7fb8', bot:'#d6f2ff', band:'#123a55', btn:'#ffffff'},
@@ -2269,7 +2244,7 @@ function renderHome(){
   $('traitList').innerHTML = Object.values(TRAITS).map(t => `<div class="trow"><span class="tdot" style="background:${t.col}"></span><b>${t.name}</b><span class="meta">wave ${t.from}+</span><span class="ud">${t.desc}</span></div>`).join('')
     + `<div class="trow"><span class="tdot" style="background:#ff5a4a"></span><b>Titan</b><span class="meta">every 10th wave</span><span class="ud">A huge final-form boss with a special power: it releases young, shields or heals its allies, or tunnels underground.</span></div>`
     + `<div class="trow"><span class="tdot" style="background:#ffe27a"></span><b>Shiny</b><span class="meta">1 in 200</span><span class="ud">A rare sparkling colorway of any wild one. Catch it to unlock its shiny skin for good.</span></div>`;
-  renderToday();
+  renderHomeBadge();
 }
 function renderHero(dt){
   heroT += dt;
@@ -2475,43 +2450,10 @@ $('shop').addEventListener('click', ev => {
 });
 
 
-/* ================= live systems: quests, streak, achievements, Boss Drop, deals, bundles ================= */
-const QUESTS = {
-  waves:{ev:'waves', n:12, gems:15, text:()=>'Clear 12 waves'},
-  kos:{ev:'kos', n:150, gems:15, text:()=>'Knock out 150 wild ones'},
-  typeko:{ev:'kos', n:60, gems:20, text:q=>`Knock out 60 wild ones with ${SP[q.sp].names[0]}`},
-  catch:{ev:'catches', n:2, gems:20, text:()=>'Catch 2 wildlings'},
-  evolve:{ev:'evolves', n:2, gems:20, text:()=>'Evolve 2 wildlings'},
-  trail:{ev:'trails', n:1, gems:25, text:()=>'Clear a campaign trail'},
-  alpha:{ev:'alphas', n:2, gems:20, text:()=>'Defeat or catch 2 alphas'},
-  place:{ev:'placed', n:10, gems:10, text:()=>'Station 10 wildlings'},
-};
-const QUEST_BONUS = 20;
-function dailyQuests(){
-  const d=dayNum(); if (profile.daily.day===d) return profile.daily.q;
-  const r=rng(d*7919+13), pool=Object.keys(QUESTS), q=[];
-  while (q.length<3){ const id=pool.splice((r()*pool.length)|0,1)[0], it={id, prog:0, claimed:false}; if (id==='typeko') it.sp=ORDER[(r()*6)|0]; q.push(it); }
-  profile.daily={day:d, q, bonus:false}; saveProfile(); return q;
-}
-const qDone = it => it.prog >= QUESTS[it.id].n;
+/* ================= live systems: achievements, Boss Drop, deals, bundles ================= */
 function track(ev, n=1, info={}){
   const st=profile.stats; st[ev]=(st[ev]||0)+n;
-  let done=null;
-  for (const it of dailyQuests()){ const Q=QUESTS[it.id]; if (Q.ev!==ev || it.claimed || qDone(it) || (it.sp && info.sp!==it.sp)) continue; it.prog=Math.min(Q.n, it.prog+n); if (qDone(it)) done=Q.text(it); }
-  if (done){ toast(`Daily quest done: ${done}. Claim it on the home page.`); saveProfile(); }
   if (ev!=='kos' || st.kos%100===0){ checkAch(); if (ev!=='kos') saveProfile(); }
-}
-// ---- login streak ----
-const STREAK = [{gems:10}, {gems:15}, {xp:40}, {gems:25}, {xp:60}, {gems:40}, {gems:100, item:'orb:streak'}];
-function checkStreak(){
-  const st=profile.streak, d=dayNum(); if (st.last===d) return;
-  st.count = st.last===d-1 ? st.count+1 : 1; st.last=d; st.claimed=false; st.best=Math.max(st.best||0, st.count); saveProfile();
-}
-function claimStreak(){
-  const st=profile.streak; if (st.claimed) return; const rw=STREAK[(st.count-1)%7]; st.claimed=true; sfx('coin');
-  if (rw.gems) addGems(rw.gems); if (rw.xp) addPassXP(rw.xp);
-  if (rw.item && !profile.owned[rw.item]){ profile.owned[rw.item]=true; toast('Day 7! +100 gems and the Streak Pod orb.'); } else toast(`Day ${st.count} reward claimed`);
-  saveProfile(); checkAch(); renderToday();
 }
 // ---- achievements and collection milestones ----
 const ownedCount = () => Object.keys(profile.owned).filter(k=>profile.owned[k]).length;
@@ -2535,8 +2477,6 @@ const ACH = [
   {id:'ko10k', g:'ach', name:'Legendary Defender', desc:'Knock out 10,000 wild ones', cur:()=>profile.stats.kos||0, need:10000, gems:100},
   {id:'titan1', g:'ach', name:'Giant Slayer', desc:'Defeat or catch a titan', cur:()=>profile.stats.titans||0, need:1, gems:30},
   {id:'titan10', g:'ach', name:'Titan Tamer', desc:'Defeat or catch 10 titans', cur:()=>profile.stats.titans||0, need:10, gems:80},
-  {id:'streak7', g:'ach', name:'Regular', desc:'Play 7 days in a row', cur:()=>profile.streak.best||profile.streak.count||0, need:7, gems:50},
-  {id:'quests20', g:'ach', name:'Quest Taker', desc:'Complete 20 daily quests', cur:()=>profile.stats.quests||0, need:20, gems:50},
   {id:'boss1', g:'ach', name:'Boss Hunter', desc:'Defeat a Boss Drop boss', cur:()=>profile.stats.bosses||0, need:1, gems:30},
   {id:'boss10', g:'ach', name:'Chest Hoarder', desc:'Defeat 10 Boss Drop bosses', cur:()=>profile.stats.bosses||0, need:10, gems:80},
   {id:'duel1', g:'ach', name:'Duelist', desc:'Win a 1v1 duel', cur:()=>profile.stats.duelWins||0, need:1, gems:30},
@@ -2680,25 +2620,12 @@ function renderDeals(){
     return `<div class="bundle"><canvas width="${b.keys.length*120}" height="120" aria-hidden="true"></canvas><div class="bn">${b.name}</div><div class="ud">${b.desc}</div><ul class="bitems">${b.keys.map(k=>`<li class="${profile.owned[k]?'own':''}">${itemLabel(k)}</li>`).join('')}</ul>${left.length ? `<div class="ud"><s>${full}</s> <b class="gem">${cost}</b> gems · save ${full-cost}${left.length<b.keys.length?' (only the items you don’t own)':''}</div><button type="button" class="btn ${profile.gems>=cost?'primary':''}" data-bundle="${b.id}" ${profile.gems>=cost?'':'disabled'}>Buy bundle · ${cost} gems</button>` : '<button type="button" class="btn" disabled>All owned</button>'}</div>`; }).join('');
   $('bundleList').querySelectorAll('canvas').forEach((cn,i) => drawCollage(cn, BUNDLES[i].keys));
 }
-// ---- home: today card ----
-function renderToday(){
-  if (!$('todayCard')) return; checkStreak();
-  const st=profile.streak, idx=(st.count-1)%7;
-  $('todayReset').textContent = `Quests reset in ${untilText(msToMidnight())}`;
-  $('streakRow').innerHTML = STREAK.map((rw,i) => `<div class="sday ${i<idx||(i===idx&&st.claimed)?'done':i===idx?'now':''} ${i===6?'big':''}"><b>Day ${i+1}</b><span>${rw.gems?rw.gems+' gems':rw.xp+' XP'}${rw.item?' + orb':''}</span></div>`).join('');
-  $('streakAct').innerHTML = st.claimed ? `<p class="meta" style="margin:0">Day ${st.count} streak. Come back tomorrow for day ${st.count%7+1}.</p>` : `<button type="button" class="btn primary" id="streakClaim">Claim day ${idx+1}</button>`;
-  const q=dailyQuests();
-  $('questList').innerHTML = q.map((it,i) => { const Q=QUESTS[it.id], d=qDone(it);
-    return `<div class="quest ${d?'done':''}"><span class="qt">${Q.text(it)}</span>${it.claimed?'<span class="meta">Claimed</span>':d?`<button type="button" class="btn primary" data-quest="${i}">+${Q.gems} gems</button>`:`<span class="meta">${it.prog}/${Q.n}</span>`}<div class="qbar"><i style="width:${it.prog/Q.n*100}%"></i></div></div>`; }).join('')
-    + `<p class="meta" style="margin:0">${profile.daily.bonus?'Bonus claimed. New quests tomorrow.':q.every(it=>it.claimed)?'':`Finish all three for a bonus ${QUEST_BONUS} gems. Each quest also gives 25 pass XP.`}</p>`;
+// ---- home: Collection badge ----
+function renderHomeBadge(){
   const n=achReady(); $('homeBook').innerHTML = 'Collection' + (n?`<span class="badge-n">${n}</span>`:'');
 }
 document.addEventListener('click', ev => {
   const t=ev.target.closest && ev.target.closest('button'); if (!t || t.disabled) return;
-  if (t.id==='streakClaim') return claimStreak();
-  if (t.dataset.quest!==undefined){ const it=dailyQuests()[+t.dataset.quest]; if (!it || it.claimed || !qDone(it)) return; it.claimed=true; sfx('coin'); addGems(QUESTS[it.id].gems); addPassXP(25); profile.stats.quests=(profile.stats.quests||0)+1;
-    if (!profile.daily.bonus && dailyQuests().every(x=>x.claimed)){ profile.daily.bonus=true; addGems(QUEST_BONUS); toast(`All quests done! +${QUEST_BONUS} bonus gems`); }
-    saveProfile(); checkAch(); renderToday(); return; }
   if (t.dataset.deal){ const key=t.dataset.deal, cost=Math.round(itemPrice(key)*(1-DEAL_OFF)); if (profile.owned[key] || profile.gems<cost) return; profile.gems-=cost; grantKey(key); sfx('coin'); saveProfile(); checkAch(); toast(`${itemLabel(key)} is yours. Equip it in Cosmetics.`); renderShop(); return; }
   if (t.dataset.bundle){ const b=BUNDLES.find(x=>x.id===t.dataset.bundle), {left, cost}=bundlePrice(b); if (!left.length || profile.gems<cost) return; profile.gems-=cost; left.forEach(grantKey); sfx('coin'); saveProfile(); checkAch(); toast(`${b.name} unlocked: ${left.length} item${left.length>1?'s':''} added. Equip them in Cosmetics.`); renderShop(); return; }
   if (t.dataset.ach){ const a=ACH.find(x=>x.id===t.dataset.ach); if (!a || profile.ach[a.id] || a.cur()<a.need) return; profile.ach[a.id]=1; sfx('coin'); addGems(a.gems); saveProfile(); renderBook(); return; }
