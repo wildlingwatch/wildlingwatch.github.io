@@ -641,7 +641,7 @@ body.in-lobby .main, body.in-lobby .stats, body.in-lobby header .diffrow{display
       <div class="up-head"><h2>Cosmetics</h2><div class="starbank"><b class="gem" id="gemBank">0</b> gems</div></div>
       <p class="empty">Every wildling has its own skins and accessories. Map themes restyle every trail. They never change stats. Earn gems by clearing waves (1 each) and trails (5, plus 10 for every new star).</p>
       <div class="gemstore"><div class="gs-head"><b>Get gems</b><span class="meta" id="storeNote"></span></div><div class="packs" id="packs"></div></div>
-      <div class="redeem"><label class="fld" for="codeIn" style="margin:0">Redeem code<input id="codeIn" maxlength="24" autocomplete="off" placeholder="Enter a code"></label><button class="btn" id="codeBtn" type="button">Redeem</button><span class="meta" id="codeMsg" role="status"></span></div>
+      <div class="redeem" hidden><label class="fld" for="codeIn" style="margin:0">Redeem code<input id="codeIn" maxlength="24" autocomplete="off" placeholder="Enter a code"></label><button class="btn" id="codeBtn" type="button">Redeem</button><span class="meta" id="codeMsg" role="status"></span></div>
       <div class="shop-row">
         <div class="seg" id="shopTabs" role="group" aria-label="Cosmetic type"><button type="button" data-t="skin">Skins</button><button type="button" data-t="hat">Accessories</button><button type="button" data-t="map">Map themes</button><button type="button" data-t="orb">Orbs</button></div>
         <div class="seg" id="shopSp" role="group" aria-label="Wildling"></div>
@@ -2401,7 +2401,7 @@ const GEM_PACKS = [
 const STORE_LINKS = { pouch:'', sack:'', chest:'', hoard:'', premium:'' };
 // After the provider confirms the $5 premium pass payment, your server sets profile.pass.premium = true for that player.
 // Promo codes. Each code works once per player. Remove or change test codes before launch.
-const PROMO_CODES = { JAREDTEST: 10000 };
+const PROMO_CODES = {};
 function redeemCode(){
   const code=$('codeIn').value.trim().toUpperCase(), msg=$('codeMsg');
   profile.redeemed = Array.isArray(profile.redeemed) ? profile.redeemed : [];
