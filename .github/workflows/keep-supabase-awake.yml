@@ -1,0 +1,40 @@
+# Supabase pauses free-plan projects after about a week without activity.
+# This reads from the database twice a week so the project stays awake.
+name: Keep Supabase awake
+
+on:
+  schedule:
+    - cron: '17 15 * * 1,4'   # Mondays and Thursdays, 15:17 UTC
+  workflow_dispatch:           # lets you run it by hand from the Actions tab
+
+permissions:
+  contents: read
+  actions: write               # to re-enable this workflow (see last step)
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Query the database
+        run: |
+          # Uses the public URL and publishable key from config.js (safe to publish).
+          URL=$(grep -oE "supabaseUrl: *'[^']+'" config.js | cut -d"'" -f2)
+          KEY=$(grep -oE "supabaseAnonKey: *'[^']+'" config.js | cut -d"'" -f2)
+          for attempt in 1 2 3; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' -m 30 \
+              -H "apikey: $KEY" "$URL/rest/v1/profiles?select=id&limit=1")
+            echo "Attempt $attempt: HTTP $code"
+            [ "$code" = 200 ] && exit 0
+            sleep 20
+          done
+          echo "::error::Supabase did not respond. It may already be paused: restore it in the Supabase dashboard."
+          exit 1
+
+      # GitHub turns off scheduled workflows in public repos after 60 days with no commits.
+      # Re-enabling it on every run keeps that from happening.
+      - name: Keep this schedule enabled
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/keep-supabase-awake.yml/enable"
