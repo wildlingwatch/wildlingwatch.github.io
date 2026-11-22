@@ -8,12 +8,28 @@ creates a guest account for them automatically.
 | `index.html` | Website landing page (features, prices, support) |
 | `play/index.html` | The whole game (12 campaign trails, 4 with branching routes) |
 | `config.js` | Your public Supabase settings and the payments switch |
+| `demo/index.html` | The free itch.io demo (4 trails, no Endless, no purchases) |
+| `src/wildling-watch.html` | **Game source.** Edit this, then rebuild `play/` and `demo/` |
+| `tools/build_site.py` | Builds `play/index.html` from the source (adds cloud saves, checkout, link previews) |
+| `tools/build_demo.py` | Builds the demo from the source |
 | `supabase/migrations/…_init.sql` | Database tables and security rules |
 | `supabase/functions/create-checkout` | Starts a Stripe checkout for a gem pack or the premium pass |
 | `supabase/functions/stripe-webhook` | Adds gems or premium after Stripe confirms the payment |
 
 Without any keys the game still works fully offline: progress stays in the browser, duels and
 purchases show as unavailable.
+
+## Editing the game
+
+`play/index.html` and `demo/index.html` are generated. Make changes in `src/wildling-watch.html`, then run:
+
+```sh
+python3 tools/build_site.py src/wildling-watch.html play/index.html
+python3 tools/build_demo.py src/wildling-watch.html /tmp/wildling-watch-demo.html demo/index.html
+cd demo && zip -q -X ~/Downloads/wildling-watch-demo-itch.zip index.html   # upload this to itch.io
+```
+
+The demo build's second argument is a standalone copy for previewing; it isn't needed for the site.
 
 ## What runs where
 
